@@ -1,0 +1,22 @@
+---
+Checks: >
+    *,
+    -altera-struct-pack-align,
+    -clang-diagnostic-c++17-extensions,
+    -fuchsia-default-arguments-calls,
+    -fuchsia-overloaded-operator,
+    -fuchsia-trailing-return,
+    -llvmlibc*,
+    -modernize-use-trailing-return-type,
+WarningsAsErrors: true
+CheckOptions:
+  # Enable specific Google style options
+  - { key: readability-identifier-naming.VariableCase, value: snake_case }
+  - { key: readability-identifier-naming.FunctionCase, value: camelBack }
+  - { key: readability-identifier-naming.ClassCase, value: CamelCase }
+  - { key: readability-identifier-naming.MemberCase, value: snake_case }
+  - { key: readability-identifier-naming.MemberSuffix, value: '_' }
+  - { key: readability-braces-around-statements.ShortStatementBraces, value: false }
+  - { key: readability-braces-around-statements.ShortCaseBraces, value: false }
+  - { key: readability-braces-around-statements.AllowShortLoopsOnASingleLine, value: true }
+  - { key: readability-braces-around-statements.AllowShortFunctionsOnASingleLine, value: All }
