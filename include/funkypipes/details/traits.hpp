@@ -22,11 +22,11 @@ struct IsOptional<std::optional<T>> : std::true_type {};
 
 // A type trait that wraps a given type in std::optional if it isn't already.
 template <typename T>
-struct EnsureOptional {
+struct EnsureOptionalWrapping {
   using Type = std::optional<T>;
 };
 template <typename U>
-struct EnsureOptional<std::optional<U>> {
+struct EnsureOptionalWrapping<std::optional<U>> {
   using Type = std::optional<U>;
 };
 

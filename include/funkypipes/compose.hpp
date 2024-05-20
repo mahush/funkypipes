@@ -19,28 +19,51 @@ namespace funkypipes::details {
 
 // A function that takes any value and ensures it is wrapped in std::optional rvalue.
 template <typename TArg>
-auto ensureOptionalAsRValue(TArg&& arg) {
-  using OptionalType = typename EnsureOptional<std::decay_t<TArg>>::Type;
+auto ensureOptional(TArg&& arg) {
+  using OptionalType = typename EnsureOptionalWrapping<std::decay_t<TArg>>::Type;
   return OptionalType{std::forward<TArg>(arg)};
 }
 
 // Helper function template to decorates the composition in order to ensure that the first callable in the chain is
-// always called with an optional argument as expected by the skippable callables (via ensureOptionalAsRValue).
+// always called with an optional argument as expected by the skippable callables (via ensureOptional).
 // Furthermore, support for calling the composition with zero or multiple parameters is added (via args as parameter
 // pack and tuple packing).
 template <typename TFn>
-auto extendCallability(TFn&& fn) {
-  return [fn = std::forward<TFn>(fn)](auto&&... args) mutable {
+class CallabilityExtendingDecoratedFn {
+ public:
+  explicit CallabilityExtendingDecoratedFn(TFn&& fn) : fn_(std::forward<TFn>(fn)) {}
+
+  template <typename TValue>
+  inline auto operator()(std::optional<TValue>&& optional_arg) {
+    return fn_(std::move(optional_arg));
+  }
+
+  template <typename TValue>
+  inline auto operator()(std::optional<TValue>& optional_arg) {
+    return fn_(optional_arg);
+  }
+
+  template <typename... TArgs>
+  inline auto operator()(TArgs&&... args) {
     constexpr size_t args_count = sizeof...(args);
     if constexpr (args_count == 1) {
       // Note: single arguments are forwarded directly
-      return fn(ensureOptionalAsRValue(std::forward<decltype(args)>(args)...));
+      return fn_(ensureOptional(std::forward<TArgs>(args))...);
     } else {
       // Note: zero or multiple arguments are forwarded via tuple
-      return fn(ensureOptionalAsRValue(std::make_tuple(std::forward<decltype(args)>(args)...)));
+      return fn_(ensureOptional(std::make_tuple(std::forward<decltype(args)>(args)...)));
     }
-  };
+  }
+
+ private:
+  TFn fn_;
+};
+
+template <typename TFn>
+auto extendCallability(TFn&& fn) {
+  return CallabilityExtendingDecoratedFn<TFn>{std::forward<TFn>(fn)};
 }
+
 }  // namespace funkypipes::details
 
 namespace funkypipes {

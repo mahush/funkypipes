@@ -9,6 +9,7 @@
 #ifndef FUNKYPIPES_DETAILS_MAKE_SKIPPABLE_HPP
 #define FUNKYPIPES_DETAILS_MAKE_SKIPPABLE_HPP
 
+#include <optional>
 #include <type_traits>
 #include <utility>
 
@@ -26,16 +27,27 @@ class SkippableDecoratedFn {
 
   template <typename TValue>
   inline auto operator()(std::optional<TValue>&& optional_arg) {
-    using FnResult = std::invoke_result_t<TFn, TValue>;
-    using OptionalFnResult = typename EnsureOptional<FnResult>::Type;
+    return callOrSkip<TValue>(std::move(optional_arg));
+  }
+
+  template <typename TValue>
+  inline auto operator()(std::optional<TValue>& optional_arg) {
+    return callOrSkip<TValue>(optional_arg);
+  }
+
+ private:
+  template <typename TValue, typename TOptional>
+  inline auto callOrSkip(TOptional&& optional_arg) {
+    using FnArgumentType = TValue;
+    using FnResult = std::invoke_result_t<TFn, FnArgumentType>;
+    using OptionalFnResult = typename EnsureOptionalWrapping<FnResult>::Type;
 
     if (optional_arg.has_value()) {
-      return OptionalFnResult{fn_(std::move(optional_arg.value()))};
+      return OptionalFnResult{fn_(std::forward<TOptional>(optional_arg).value())};
     }
     return OptionalFnResult{std::nullopt};
   }
 
- private:
   TFn fn_;
 };
 
