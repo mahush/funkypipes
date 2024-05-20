@@ -50,6 +50,15 @@ TEST(MakeSignatureChecking, callable__called_with_non_copyable_value__works) {
   NonCopyableArg res = signature_checking_lambda(std::move(argument));
 }
 
+TEST(MakeSignatureChecking, callable__called_without_parameter__works) {
+  auto lambda = []() { return "result"; };
+
+  auto signature_checking_lambda = makeSignatureChecking(lambda);
+
+  std::string res = signature_checking_lambda();
+  EXPECT_EQ(res, "result");
+}
+
 TEST(MakeSignatureChecking, non_copyable_callable__called__works) {
   struct NonCopyableFn {
     ~NonCopyableFn() = default;

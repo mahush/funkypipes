@@ -68,6 +68,7 @@ TEST(Compose, lambdas_composition_with_multiple_arguments__called__is_executed) 
   auto result = composition(1, 2);
   ASSERT_EQ(result, "3");
 }
+
 TEST(Compose, lambdas_composition_with_tuple_argument__called__is_executed) {
   auto lambda_1 = [](int arg1, int arg2) -> int { return arg1 + arg2; };
   auto lambda_2 = [](int value) -> std::string { return std::to_string(value); };
@@ -103,6 +104,17 @@ TEST(Compose, lambda_composition_with_tuple_result__called__is_executed) {
   ASSERT_EQ(result_1, 1);
   ASSERT_EQ(result_2, "1");
 }
+
+TEST(Compose, lambdas_composition_without_arguments__called__is_executed) {
+  auto lambda_1 = []() -> int { return 0; };
+  auto lambda_2 = [](int value) -> std::string { return std::to_string(value); };
+
+  auto composition = compose(lambda_1, lambda_2);
+
+  auto result = composition();
+  ASSERT_EQ(result, "0");
+}
+
 TEST(Compose, generic_lambdas_composition__called_with_different_types__type_specific_chain_executed) {
   auto generic_lambda = [](auto arg) { return arg; };
 

@@ -25,15 +25,18 @@ auto ensureOptionalAsRValue(TArg&& arg) {
 }
 
 // Helper function template to decorates the composition in order to ensure that the first callable in the chain is
-// always called with an optional argument (as expected by the skippable callables). Furthermore, to support the
-// composition to be called with zero or multiple parameters. Therefore the returned lambda accepts its args as
-// parameter pack, applies EnsureOptionalAsRValue and potentionally combines them as tuple.
+// always called with an optional argument as expected by the skippable callables (via ensureOptionalAsRValue).
+// Furthermore, support for calling the composition with zero or multiple parameters is added (via args as parameter
+// pack and tuple packing).
 template <typename TFn>
 auto extendCallability(TFn&& fn) {
   return [fn = std::forward<TFn>(fn)](auto&&... args) mutable {
-    if constexpr (sizeof...(args) <= 1) {
+    constexpr size_t args_count = sizeof...(args);
+    if constexpr (args_count == 1) {
+      // Note: single arguments are forwarded directly
       return fn(ensureOptionalAsRValue(std::forward<decltype(args)>(args)...));
     } else {
+      // Note: zero or multiple arguments are forwarded via tuple
       return fn(ensureOptionalAsRValue(std::make_tuple(std::forward<decltype(args)>(args)...)));
     }
   };

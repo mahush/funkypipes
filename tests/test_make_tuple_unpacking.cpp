@@ -42,3 +42,14 @@ TEST(MakeTupleUnpacking, callable_accepting_int__called_with_int__works) {
   int res = unpacking_lambda(std::move(argument));
   EXPECT_EQ(res, 0);
 }
+
+TEST(MakeTupleUnpacking, callable_without_parameter__called_with_empty_tuple__works) {
+  auto lambda = []() { return true; };
+
+  auto unpacking_lambda = makeTupleUnpacking(lambda);
+
+  std::tuple<> empty_tuple;
+  std::optional<bool> res = unpacking_lambda(std::move(empty_tuple));
+  EXPECT_TRUE(res.has_value());
+  EXPECT_EQ(res.value(), true);
+}
