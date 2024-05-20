@@ -9,6 +9,7 @@
 #ifndef FUNKYPIPES_COMPOSE_HPP
 #define FUNKYPIPES_COMPOSE_HPP
 
+#include "funkypipes/details/make_signature_checking.hpp"
 #include "funkypipes/details/make_skippable.hpp"
 #include "funkypipes/details/traits.hpp"
 
@@ -51,7 +52,8 @@ namespace funkypipes {
 // "signature checking", afterwards the callables are composes into a single callable chain using ComposeSkippables.
 template <typename... TFns>
 auto compose(TFns&&... fns) {
-  return composeSkippables(details::makeSkippable(std::forward<TFns>(fns))...);
+  using namespace details;
+  return composeSkippables(makeSkippable(makeSignatureChecking(std::forward<TFns>(fns)))...);
 }
 
 }  // namespace funkypipes
