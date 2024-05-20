@@ -16,21 +16,22 @@
 
 namespace funkypipes::details {
 
-// A function that takes any value and ensures it is wrapped in std::optional.
+// A function that takes any value and ensures it is wrapped in std::optional rvalue.
 template <typename TArg>
-auto ensureOptional(TArg&& arg) {
+auto EnsureOptionalAsRValue(TArg&& arg) {
   using OptionalType = typename EnsureOptional<std::decay_t<TArg>>::Type;
   return OptionalType{std::forward<TArg>(arg)};
 }
 
-// Helper function template to decorates the composition in order to ensure that the first callable in
-// the chain is always called with an optional argument (as expected by the skippable callables).
-// Furthermore, to support the composition to be called with zero or multiple parameters. Therefore the
-// returned lambda accepts its args as parameter pack, applies ensureOptional and potentionally combines them as tuple.
+// Helper function template to decorates the composition in order to ensure that the first callable in the chain is
+// always called with an optional argument (as expected by the skippable callables). Furthermore, to support the
+// composition to be called with zero or multiple parameters. Therefore the returned lambda accepts its args as
+// parameter pack, applies EnsureOptionalAsRValue and potentionally combines them as tuple.
 template <typename TFn>
 auto extendCallability(TFn&& fn) {
-  return
-      [fn = std::forward<TFn>(fn)](auto&& arg) mutable { return fn(ensureOptional(std::forward<decltype(arg)>(arg))); };
+  return [fn = std::forward<TFn>(fn)](auto&& arg) mutable {
+    return fn(EnsureOptionalAsRValue(std::forward<decltype(arg)>(arg)));
+  };
 }
 }  // namespace funkypipes::details
 

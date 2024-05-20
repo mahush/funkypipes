@@ -16,26 +16,33 @@
 
 namespace funkypipes::details {
 
-// Helper template function that transforms a given function (Fn) into another one (FnSkippable). FnSkippable expectes
-// Fn's argument wrapped in a std::optional. Moreover, FnSkippable returns Fn's result wrapped into std::optional,
-// unless it is not already. When calling FnSkippable, Fn is just executed unless FnSkippable is called with a
-// std::nullopt. In this case, Fn is not executed (skipped) and FnSkippable simply returns a std::nullopt.
+// This functor wraps a given function 'fn', allowing its argument and return value to be encapsulated in std::optional.
+// If called with std::nullopt, the functor skips the execution of 'fn' and directly returns std::nullopt.
+// Otherwise, it executes 'fn' and wraps the result in std::optional unless it is already an std::optional.
 template <typename TFn>
-auto makeSkippable(TFn&& fn) {
-  return [fn = std::forward<TFn>(fn)](auto&& optional_arg) mutable {
-    using OptionalArg = std::decay_t<decltype(optional_arg)>;
-    using ValueArg = typename OptionalArg::value_type;
-    using FnResult = typename std::invoke_result<TFn, ValueArg>::type;
+class SkippableDecoratedFn {
+ public:
+  explicit SkippableDecoratedFn(TFn&& fn) : fn_(std::forward<TFn>(fn)) {}
+
+  template <typename TValue>
+  inline auto operator()(std::optional<TValue>&& optional_arg) {
+    using FnResult = std::invoke_result_t<TFn, TValue>;
     using OptionalFnResult = typename EnsureOptional<FnResult>::Type;
 
     if (optional_arg.has_value()) {
-      auto&& unwrapped_value = std::forward<OptionalArg>(optional_arg).value();
-      return OptionalFnResult{fn(std::forward<decltype(unwrapped_value)>(unwrapped_value))};
+      return OptionalFnResult{fn_(std::move(optional_arg.value()))};
     }
-
-    // skip fn
     return OptionalFnResult{std::nullopt};
-  };
+  }
+
+ private:
+  TFn fn_;
+};
+
+// Helper template function that transforms a given function into a skippable one. See SkippableDecoratedFn for details.
+template <typename TFn>
+auto makeSkippable(TFn&& fn) {
+  return SkippableDecoratedFn<TFn>(std::forward<TFn>(fn));
 }
 
 }  // namespace funkypipes::details

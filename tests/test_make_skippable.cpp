@@ -14,18 +14,7 @@
 using namespace funkypipes;
 using namespace funkypipes::details;
 
-TEST(MakeSkippable, callable_having_value_argument__called_with_lvalue_argument__works) {
-  auto lambda = [](int value) { return std::to_string(value); };
-
-  auto skippable_lambda = makeSkippable(lambda);
-
-  std::optional<int> argument{1};
-  std::optional<std::string> res = skippable_lambda(argument);
-  EXPECT_TRUE(res.has_value());
-  EXPECT_EQ(res.value(), "1");
-}
-
-TEST(MakeSkippable, callable_having_value_argument__called_with_rvalue_argument__works) {
+TEST(MakeSkippable, callable_having_value_argument__called_with_rvalue_optional__works) {
   auto lambda = [](int value) { return std::to_string(value); };
 
   auto skippable_lambda = makeSkippable(lambda);
@@ -36,7 +25,7 @@ TEST(MakeSkippable, callable_having_value_argument__called_with_rvalue_argument_
   EXPECT_EQ(res.value(), "1");
 }
 
-TEST(MakeSkippable, any_callable_having_value_argument__called_with_non_copyable_argument__works) {
+TEST(MakeSkippable, callable_having_value_argument__called_with_non_copyable_rvalue_optional__works) {
   struct NonCopyableArg {
     ~NonCopyableArg() = default;
     NonCopyableArg(const NonCopyableArg&) = delete;
@@ -50,20 +39,21 @@ TEST(MakeSkippable, any_callable_having_value_argument__called_with_non_copyable
   auto skippable_lambda = makeSkippable(lambda);
 
   auto argument = std::make_optional(NonCopyableArg{});
-  std::optional<NonCopyableArg> res = skippable_lambda(argument);
+  std::optional<NonCopyableArg> res = skippable_lambda(std::move(argument));
   EXPECT_TRUE(res.has_value());
 }
 
-TEST(MakeSkippable, callable_having_reference_argument__called_with_lvalue_argument__works) {
+TEST(MakeSkippable, callable_having_reference_argument__called_with_rvalue_optional__works) {
   auto lambda = [](const int& value) { return std::to_string(value); };
 
   auto skippable_lambda = makeSkippable(lambda);
 
   std::optional<int> argument{1};
-  std::optional<std::string> res = skippable_lambda(argument);
+  std::optional<std::string> res = skippable_lambda(std::move(argument));
   EXPECT_TRUE(res.has_value());
   EXPECT_EQ(res.value(), "1");
 }
+
 TEST(MakeSkippable, callable_returning_value__called_with_nullopt__is_skipped) {
   auto lambda = [](int value) {
     throw std::exception{};
@@ -73,7 +63,7 @@ TEST(MakeSkippable, callable_returning_value__called_with_nullopt__is_skipped) {
 
   std::optional<int> argument{std::nullopt};
   std::optional<std::string> res;
-  ASSERT_NO_THROW(res = skippable_lambda(argument));
+  ASSERT_NO_THROW(res = skippable_lambda(std::move(argument)));
   EXPECT_FALSE(res.has_value());
 }
 
@@ -86,7 +76,7 @@ TEST(MakeSkippable, callable_returning_optional__called_with_nullopt__is_skipped
 
   std::optional<int> argument{std::nullopt};
   std::optional<std::string> res;
-  ASSERT_NO_THROW(res = skippable_lambda(argument));
+  ASSERT_NO_THROW(res = skippable_lambda(std::move(argument)));
   EXPECT_FALSE(res.has_value());
 }
 
@@ -96,7 +86,7 @@ TEST(MakeSkippable, callable_returning_optional__called_with_value__is_executed)
   auto skippable_lambda = makeSkippable(lambda);
 
   std::optional<int> argument{1};
-  std::optional<std::string> res = skippable_lambda(argument);
+  std::optional<std::string> res = skippable_lambda(std::move(argument));
   EXPECT_TRUE(res.has_value());
   EXPECT_EQ(res.value(), "1");
 }
@@ -113,13 +103,13 @@ TEST(MakeSkippable, generic_functor_callable__called_with_value__is_executed) {
 
   {
     std::optional<int> argument{1};
-    std::optional<int> res = skippable_generic_functor(argument);
+    std::optional<int> res = skippable_generic_functor(std::move(argument));
     EXPECT_TRUE(res.has_value());
     EXPECT_EQ(res.value(), 1);
   }
   {
     auto argument = std::make_optional("string");
-    std::optional<std::string> res = skippable_generic_functor(argument);
+    std::optional<std::string> res = skippable_generic_functor(std::move(argument));
     EXPECT_TRUE(res.has_value());
     EXPECT_EQ(res.value(), "string");
   }
@@ -132,13 +122,13 @@ TEST(MakeSkippable, generic_lambda_callable__called_with_value__is_executed) {
 
   {
     std::optional<int> argument{1};
-    std::optional<int> res = skippable_lambda(argument);
+    std::optional<int> res = skippable_lambda(std::move(argument));
     EXPECT_TRUE(res.has_value());
     EXPECT_EQ(res.value(), 1);
   }
   {
     auto argument = std::make_optional("string");
-    std::optional<std::string> res = skippable_lambda(argument);
+    std::optional<std::string> res = skippable_lambda(std::move(argument));
     EXPECT_TRUE(res.has_value());
     EXPECT_EQ(res.value(), "string");
   }
@@ -154,14 +144,14 @@ TEST(MakeSkippable, overloaded_functor_callable__called_with_value__is_executed)
 
   {
     std::optional<int> argument{1};
-    std::optional<int> res = skippable_overloaded_fn(argument);
+    std::optional<int> res = skippable_overloaded_fn(std::move(argument));
     EXPECT_TRUE(res.has_value());
     EXPECT_EQ(res.value(), 1);
   }
 
   {
     auto argument = std::make_optional("1");
-    std::optional<std::string> res = skippable_overloaded_fn(argument);
+    std::optional<std::string> res = skippable_overloaded_fn(std::move(argument));
     EXPECT_TRUE(res.has_value());
     EXPECT_EQ(res.value(), "1");
   }
@@ -181,7 +171,7 @@ TEST(MakeSkippable, non_copyable_callable__called_with_value__is_executed) {
   auto skippable_fn = makeSkippable(NonCopyableFn{});
 
   std::optional<int> argument{1};
-  std::optional<int> res = skippable_fn(argument);
+  std::optional<int> res = skippable_fn(std::move(argument));
   EXPECT_TRUE(res.has_value());
   EXPECT_EQ(res.value(), 1);
 }
