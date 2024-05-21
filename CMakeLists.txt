@@ -27,7 +27,8 @@ enable_testing()
 add_executable(test_funkypipes tests/test_compose.cpp
                                tests/test_compose_raw.cpp
                                tests/test_make_signature_checking.cpp
-                               tests/test_make_skippable.cpp)
+                               tests/test_make_skippable.cpp
+                               tests/test_make_tuple_unpacking.cpp)
 target_link_libraries(test_funkypipes PRIVATE gtest_main)
 target_include_directories(test_funkypipes PRIVATE
     ${PROJECT_SOURCE_DIR}/include

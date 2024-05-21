@@ -47,7 +47,7 @@ TEST(Compose, free_function_composition__called_with_rvalue_optional__is_execute
   ASSERT_EQ(result, "77");
 }
 
-TEST(Compose, lambdas_composition__called__is_executed) {
+TEST(Compose, lambdas_composition_with_single_argument__called__is_executed) {
   auto lambda_1 = [](bool flag) -> int { return flag ? 7 : 0; };
   auto lambda_2 = [](int value) -> std::string { return std::to_string(value); };
   auto lambda_3 = [](const std::string& string) -> std::string { return string + string; };
@@ -59,6 +59,50 @@ TEST(Compose, lambdas_composition__called__is_executed) {
   ASSERT_EQ(result, "77");
 }
 
+TEST(Compose, lambdas_composition_with_multiple_arguments__called__is_executed) {
+  auto lambda_1 = [](int arg1, int arg2) -> int { return arg1 + arg2; };
+  auto lambda_2 = [](int value) -> std::string { return std::to_string(value); };
+
+  auto composition = compose(lambda_1, lambda_2);
+
+  auto result = composition(1, 2);
+  ASSERT_EQ(result, "3");
+}
+TEST(Compose, lambdas_composition_with_tuple_argument__called__is_executed) {
+  auto lambda_1 = [](int arg1, int arg2) -> int { return arg1 + arg2; };
+  auto lambda_2 = [](int value) -> std::string { return std::to_string(value); };
+
+  auto composition = compose(lambda_1, lambda_2);
+
+  auto result = composition(std::make_tuple(3, 4));
+  ASSERT_EQ(result, "7");
+}
+
+TEST(Compose, lambda_composition_with_tuple_passthrough__called__is_executed) {
+  auto lambda_1 = [](bool flag) -> std::tuple<int, std::string> { return {flag, "2"}; };
+  auto lambda_2 = [](int arg1, const std::string& arg2) -> std::string { return std::to_string(arg1) + arg2; };
+
+  auto composition = compose(lambda_1, lambda_2);
+
+  bool flag = true;
+  auto result = composition(flag);
+  ASSERT_EQ(result, "12");
+}
+
+TEST(Compose, lambda_composition_with_tuple_result__called__is_executed) {
+  auto lambda_1 = [](bool flag) -> bool { return static_cast<int>(flag); };
+  auto lambda_2 = [](int value) -> std::tuple<int, std::string> { return {value, std::to_string(value)}; };
+
+  auto composition = compose(lambda_1, lambda_2);
+
+  bool flag = true;
+  auto tuple_result = composition(flag);
+
+  ASSERT_TRUE(tuple_result.has_value());
+  auto [result_1, result_2] = tuple_result.value();
+  ASSERT_EQ(result_1, 1);
+  ASSERT_EQ(result_2, "1");
+}
 TEST(Compose, generic_lambdas_composition__called_with_different_types__type_specific_chain_executed) {
   auto generic_lambda = [](auto arg) { return arg; };
 

@@ -12,13 +12,14 @@
 #include "funkypipes/details/compose_raw.hpp"
 #include "funkypipes/details/make_signature_checking.hpp"
 #include "funkypipes/details/make_skippable.hpp"
+#include "funkypipes/details/make_tuple_unpacking.hpp"
 #include "funkypipes/details/traits.hpp"
 
 namespace funkypipes::details {
 
 // A function that takes any value and ensures it is wrapped in std::optional rvalue.
 template <typename TArg>
-auto EnsureOptionalAsRValue(TArg&& arg) {
+auto ensureOptionalAsRValue(TArg&& arg) {
   using OptionalType = typename EnsureOptional<std::decay_t<TArg>>::Type;
   return OptionalType{std::forward<TArg>(arg)};
 }
@@ -29,8 +30,12 @@ auto EnsureOptionalAsRValue(TArg&& arg) {
 // parameter pack, applies EnsureOptionalAsRValue and potentionally combines them as tuple.
 template <typename TFn>
 auto extendCallability(TFn&& fn) {
-  return [fn = std::forward<TFn>(fn)](auto&& arg) mutable {
-    return fn(EnsureOptionalAsRValue(std::forward<decltype(arg)>(arg)));
+  return [fn = std::forward<TFn>(fn)](auto&&... args) mutable {
+    if constexpr (sizeof...(args) <= 1) {
+      return fn(ensureOptionalAsRValue(std::forward<decltype(args)>(args)...));
+    } else {
+      return fn(ensureOptionalAsRValue(std::make_tuple(std::forward<decltype(args)>(args)...)));
+    }
   };
 }
 }  // namespace funkypipes::details
@@ -38,12 +43,13 @@ auto extendCallability(TFn&& fn) {
 namespace funkypipes {
 
 // Function template that creates a composition out of the given callables. Each callable is decorated to be
-// "skippable" and "signature checking", afterwards the callables are composes into a single callable
+// "skippable", "tuple unpacking" and "signature checking", afterwards the callables are composes into a single callable
 // chain using composeRaw. Finally the callable chain is decorated to have extended call ability.
 template <typename... TFns>
 auto compose(TFns&&... fns) {
   using namespace details;
-  return extendCallability(composeRaw(makeSkippable(makeSignatureChecking(std::forward<TFns>(fns)))...));
+  return extendCallability(
+      composeRaw(makeSkippable(makeTupleUnpacking(makeSignatureChecking(std::forward<TFns>(fns))))...));
 }
 
 }  // namespace funkypipes
