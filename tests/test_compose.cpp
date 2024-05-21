@@ -9,7 +9,6 @@
 #include <gtest/gtest.h>
 
 #include "funkypipes/compose.hpp"
-#include "funkypipes/disable_optional_argument_fn.hpp"
 
 using namespace funkypipes;
 using namespace funkypipes::details;
@@ -61,9 +60,9 @@ TEST(Compose, lambdas_composition__called__is_executed) {
 }
 
 TEST(Compose, generic_lambdas_composition__called_with_different_types__type_specific_chain_executed) {
-  auto generic_lambda_without_optional_support = DisablingOptionalArgumentFn{[](auto arg) { return arg; }};
+  auto generic_lambda = [](auto arg) { return arg; };
 
-  auto composition = compose(generic_lambda_without_optional_support, generic_lambda_without_optional_support);
+  auto composition = compose(generic_lambda, generic_lambda);
 
   {
     bool flag = true;
@@ -174,7 +173,7 @@ TEST(Compose, lambdas_composition__called_with_nullopt__noting_is_executed) {
 }
 
 TEST(Compose, generic_lambdas_composition__assigned_to_std_functions__calling_works) {
-  auto generic_lambda = DisablingOptionalArgumentFn{[](auto arg) { return arg; }};
+  auto generic_lambda = [](auto arg) { return arg; };
 
   auto composition = compose(generic_lambda, generic_lambda);
   std::function<std::optional<int>(int)> function_a = composition;

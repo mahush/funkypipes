@@ -21,9 +21,6 @@ struct AssertInvocability {
   static_assert(std::is_invocable_v<TFn, TArg>,
                 "Callable TFn does not support arguments of type TArg. Look for AssertInvocability in the compiler's "
                 "error output to figure out the relevant types TFn and TArg.");
-  static_assert(not std::is_invocable_v<TFn, std::optional<std::decay_t<TArg>>>,
-                "Callable TFn may not support an argument of type std::optional. Look for AssertInvocability in the "
-                "compiler's error output to figure out the relevant types TFn and TArg.");
   using ResultType = typename std::invoke_result<TFn, TArg>::type;
   static_assert(not std::is_void_v<ResultType>,
                 "Result of TFn may not be void. Look for AssertInvocability in the compiler's error output to figure "

@@ -9,7 +9,6 @@
 #include <gtest/gtest.h>
 
 #include "funkypipes/details/make_skippable.hpp"
-#include "funkypipes/disable_optional_argument_fn.hpp"
 
 using namespace funkypipes;
 using namespace funkypipes::details;
@@ -116,7 +115,7 @@ TEST(MakeSkippable, generic_functor_callable__called_with_value__is_executed) {
 }
 
 TEST(MakeSkippable, generic_lambda_callable__called_with_value__is_executed) {
-  auto lambda = DisablingOptionalArgumentFn([](auto arg) { return arg; });
+  auto lambda = [](auto arg) { return arg; };
 
   auto skippable_lambda = makeSkippable(lambda);
 
@@ -194,14 +193,5 @@ TEST(MakeSkippable, non_copyable_callable__called_with_value__is_executed) {
 //
 //   std::optional<int> argument{1};
 //   skippable_fn(argument);
-// }
-
-// TEST(MakeSkippable, callable_taking_optional__triggers_static_assert) {
-//   auto lambda = [](std::optional<int> value) { return value; };
-//
-//   auto skippable_lambda = makeSkippable(lambda);
-//
-//   std::optional<int> argument{1};
-//   skippable_lambda(argument);
 // }
 
