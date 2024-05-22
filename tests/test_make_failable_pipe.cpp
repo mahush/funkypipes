@@ -136,6 +136,18 @@ TEST(MakeFailablePipe, compositionWithTuplePassthrough_called_isExecuted) {
   ASSERT_NO_FATAL_FAILURE(compositionWithTuplePassthrough_called_isExecuted(makeFailablePipeFn));
 }
 
+TEST(MakefailablePipe, failableCompositionWithTuplePassthrough_called_isExecuted) {
+  auto lambda_1 = [](bool flag) -> std::optional<std::tuple<int, std::string>> {
+    return std::tuple<int, std::string>({flag, "2"});
+  };
+  auto lambda_2 = [](int arg1, const std::string& arg2) -> std::string { return std::to_string(arg1) + arg2; };
+
+  auto pipe = makeFailablePipe(lambda_1, lambda_2);
+  bool flag = true;
+  auto result = pipe(flag);
+  ASSERT_EQ(result, "12");
+}
+
 TEST(MakeFailablePipe, failableCompositionWithTupleResult_called_isExecuted) {
   auto lambda_1 = [](bool flag) -> bool { return static_cast<int>(flag); };
   auto lambda_2 = [](int value) -> std::tuple<int, std::string> { return {value, std::to_string(value)}; };
