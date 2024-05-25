@@ -20,8 +20,12 @@ namespace funkypipes::details {
 // A function that takes any value and ensures it is wrapped in std::optional rvalue.
 template <typename TArg>
 auto ensureOptional(TArg&& arg) {
-  using OptionalType = typename EnsureOptionalWrapping<TArg>::Type;
-  return OptionalType{std::forward<TArg>(arg)};
+  if constexpr (IsOptional<TArg>::value) {
+    return std::forward<TArg>(arg);
+  } else {
+    using OptionalType = typename OptionalWrapping<TArg>::Type;
+    return OptionalType{std::forward<TArg>(arg)};
+  }
 }
 
 // Helper function template to decorates the composition in order to ensure that the first callable in the chain is
