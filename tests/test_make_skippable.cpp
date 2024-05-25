@@ -186,6 +186,39 @@ TEST(MakeSkippable, non_copyable_callable__called_with_value__is_executed) {
   EXPECT_EQ(res.value(), 1);
 }
 
+TEST(MakeSkippable, callable_providing_const_reference__called__returns_optional_const_reference) {
+  auto lambda = [](const int& arg) -> const int& { return arg; };
+  auto skippable_lambda = makeSkippable(lambda);
+
+  int argument_raw = 1;
+  std::optional<std::reference_wrapper<const int>> argument{argument_raw};
+  std::optional<std::reference_wrapper<const int>> res = skippable_lambda(argument);
+  EXPECT_TRUE(res.has_value());
+  EXPECT_EQ(res.value(), 1);
+
+  const int& result_raw = res.value();
+  EXPECT_EQ(result_raw, 1);
+
+  argument_raw++;
+  EXPECT_EQ(result_raw, 2);
+}
+
+TEST(MakeSkippable, callable_providing_reference__called__returns_optional_reference) {
+  auto lambda = [](int& arg) -> int& { return arg; };
+  auto skippable_lambda = makeSkippable(lambda);
+
+  int argument_raw = 1;
+  std::optional<std::reference_wrapper<int>> argument{argument_raw};
+  std::optional<std::reference_wrapper<int>> res = skippable_lambda(argument);
+  EXPECT_TRUE(res.has_value());
+
+  int& result_raw = res.value();
+  EXPECT_EQ(result_raw, 1);
+
+  result_raw++;
+  EXPECT_EQ(argument_raw, 2);
+}
+
 // TEST(MakeSkippable,
 // callable_called_with_unsupported_argument__triggers_static_assert) {
 //   auto lambda = [](int value) { return value; };

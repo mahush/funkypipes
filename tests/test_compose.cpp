@@ -149,7 +149,7 @@ TEST(Compose, overloaded_functors_composition__called_with_each_type__type_speci
   std::function<std::optional<std::string>(std::string)> pipeline2 = compose(OverloadFn1{}, OverloadFn2{});
 
   EXPECT_EQ(0, composition(0));
-  EXPECT_EQ("0", composition("0"));
+  EXPECT_EQ("0", composition(std::string{"0"}));
 }
 
 TEST(Compose, non_copyable_functions_composition__called__is_executed) {
@@ -237,6 +237,34 @@ TEST(Compose, generic_lambdas_composition__assigned_to_std_functions__calling_wo
 
   ASSERT_EQ(1, function_a(1));
   ASSERT_EQ("1", function_b("1"));
+}
+
+TEST(Compose, callables_forwarding_refererence__composed__references_are_preserved) {
+  auto lambda = [](int& value) -> int& { return value; };
+
+  auto composition = compose(lambda, lambda);
+
+  int argument{1};
+  std::optional<std::reference_wrapper<int>> result = composition(argument);
+  ASSERT_EQ(result, 1);
+
+  ASSERT_TRUE(result.has_value());
+  result.value()++;
+  ASSERT_EQ(argument, 2);
+}
+
+TEST(Compose, callables_forwarding_const_refererence__composed__const_references_are_preserved) {
+  auto lambda = [](const int& value) -> const int& { return value; };
+
+  auto composition = compose(lambda, lambda);
+
+  int argument{1};
+  std::optional<std::reference_wrapper<const int>> result = composition(argument);
+  ASSERT_EQ(result, 1);
+
+  ASSERT_TRUE(result.has_value());
+  argument++;
+  ASSERT_EQ(result, 2);
 }
 
 // TEST(Compose, void_return_type_callable__compose__triggers_static_assert)

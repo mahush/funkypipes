@@ -61,3 +61,28 @@ TEST(ComposeRaw, lambdas_composition_with_value_argument__called_with_rvalue__wo
   ASSERT_EQ(result, "1");
 }
 
+TEST(ComposeRaw, callables_forwarding_const_refererence__composed__const_references_are_preserved) {
+  auto lambda = [](const int& value) -> const int& { return value; };
+
+  auto composition = composeRaw(lambda, lambda);
+
+  int argument{0};
+  const int& result = composition(argument);
+  ASSERT_EQ(result, 0);
+
+  argument++;
+  ASSERT_EQ(result, 1);
+}
+
+TEST(ComposeRaw, callables_forwarding_refererence__composed__references_are_preserved) {
+  auto lambda = [](int& value) -> int& { return value; };
+
+  auto composition = composeRaw(lambda, lambda);
+
+  int argument{1};
+  int& result = composition(argument);
+  ASSERT_EQ(result, 1);
+
+  result++;
+  ASSERT_EQ(argument, 2);
+}

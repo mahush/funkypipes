@@ -33,10 +33,9 @@ struct AssertInvocability {
 //  - does not return void
 template <typename TFn>
 auto makeSignatureChecking(TFn&& fn) {
-  return [fn = std::forward<TFn>(fn)](auto&&... args) mutable {
-    (void)AssertInvocability<TFn, decltype(args)...>{};  // Note: An unused instance is created to ensure
-                                                         // that this template is evaluated before the
-                                                         // next line.
+  return [fn = std::forward<TFn>(fn)](auto&&... args) mutable -> decltype(auto) {
+    (void)AssertInvocability<TFn, decltype(args)...>{};  // Note: An unused instance is created to ensure that
+                                                         // this template is evaluated before the next line.
     return fn(std::forward<decltype(args)>(args)...);
   };
 }

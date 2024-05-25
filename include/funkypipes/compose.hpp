@@ -20,7 +20,7 @@ namespace funkypipes::details {
 // A function that takes any value and ensures it is wrapped in std::optional rvalue.
 template <typename TArg>
 auto ensureOptional(TArg&& arg) {
-  using OptionalType = typename EnsureOptionalWrapping<std::decay_t<TArg>>::Type;
+  using OptionalType = typename EnsureOptionalWrapping<TArg>::Type;
   return OptionalType{std::forward<TArg>(arg)};
 }
 

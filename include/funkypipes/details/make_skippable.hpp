@@ -38,7 +38,7 @@ class SkippableDecoratedFn {
  private:
   template <typename TValue, typename TOptional>
   inline auto callOrSkip(TOptional&& optional_arg) {
-    using FnArgumentType = TValue;
+    using FnArgumentType = typename OptionalUnwrapping<std::optional<TValue>>::Type;
     using FnResult = std::invoke_result_t<TFn, FnArgumentType>;
     using OptionalFnResult = typename EnsureOptionalWrapping<FnResult>::Type;
 

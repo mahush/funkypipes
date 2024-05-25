@@ -25,12 +25,12 @@ class UnpackingFn {
   explicit UnpackingFn(TFn&& fn) : fn_(std::forward<TFn>(fn)) {}
 
   template <typename TArg>
-  inline auto operator()(TArg&& arg) {
+  inline auto operator()(TArg&& arg) -> decltype(auto) {
     return fn_(std::forward<TArg>(arg));
   }
 
   template <typename... Ts>
-  inline auto operator()(std::tuple<Ts...>&& arg) {
+  inline auto operator()(std::tuple<Ts...>&& arg) -> decltype(auto) {
     return std::apply(fn_, std::move(arg));
   }
 

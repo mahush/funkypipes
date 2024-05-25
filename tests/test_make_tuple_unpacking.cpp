@@ -53,3 +53,29 @@ TEST(MakeTupleUnpacking, callable_without_parameter__called_with_empty_tuple__wo
   EXPECT_TRUE(res.has_value());
   EXPECT_EQ(res.value(), true);
 }
+
+TEST(MakeTupleUnpacking, callable_accepting_const_reference__called_with_const_reference__works) {
+  auto lambda = [](const int& value) -> const int& { return value; };
+
+  auto unpacking_lambda = makeTupleUnpacking(lambda);
+
+  int argument{1};
+  const int& result = unpacking_lambda(argument);
+  EXPECT_EQ(result, 1);
+
+  argument++;
+  ASSERT_EQ(result, 2);
+}
+
+TEST(MakeTupleUnpacking, callable_accepting_reference__called_with_reference__works) {
+  auto lambda = [](int& value) -> int& { return value; };
+
+  auto unpacking_lambda = makeTupleUnpacking(lambda);
+
+  int argument{1};
+  int& result = unpacking_lambda(argument);
+  EXPECT_EQ(result, 1);
+
+  result++;
+  ASSERT_EQ(argument, 2);
+}
