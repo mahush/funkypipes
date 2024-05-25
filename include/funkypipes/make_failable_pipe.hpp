@@ -6,10 +6,10 @@
 // Official repository: https://github/mahush/funkypipes
 //
 
-#ifndef FUNKYPIPES_COMPOSE_HPP
-#define FUNKYPIPES_COMPOSE_HPP
+#ifndef FUNKYPIPES_MAKE_FAILABLE_PIPE_HPP
+#define FUNKYPIPES_MAKE_FAILABLE_PIPE_HPP
 
-#include "funkypipes/details/compose_raw.hpp"
+#include "funkypipes/details/make_raw_pipe.hpp"
 #include "funkypipes/details/make_signature_checking.hpp"
 #include "funkypipes/details/make_skippable.hpp"
 #include "funkypipes/details/make_tuple_unpacking.hpp"
@@ -72,12 +72,12 @@ namespace funkypipes {
 // "skippable", "tuple unpacking" and "signature checking", afterwards the callables are composes into a single callable
 // chain using composeRaw. Finally the callable chain is decorated to have extended call ability.
 template <typename... TFns>
-auto compose(TFns&&... fns) {
+auto makeFailablePipe(TFns&&... fns) {
   using namespace details;
   return extendCallability(
-      composeRaw(makeSkippable(makeTupleUnpacking(makeSignatureChecking(std::forward<TFns>(fns))))...));
+      makeRawPipe(makeSkippable(makeTupleUnpacking(makeSignatureChecking(std::forward<TFns>(fns))))...));
 }
 
 }  // namespace funkypipes
 
-#endif  // FUNKYPIPES_COMPOSE_HPP
+#endif  // FUNKYPIPES_MAKE_FAILABLE_PIPE_HPP

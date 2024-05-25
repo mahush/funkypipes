@@ -24,8 +24,8 @@ set_target_properties(gtest gtest_main PROPERTIES
 
 # Setup for testing
 enable_testing()
-add_executable(test_funkypipes tests/test_compose.cpp
-                               tests/test_compose_raw.cpp
+add_executable(test_funkypipes tests/test_make_failable_pipe.cpp
+                               tests/test_make_raw_pipe.cpp
                                tests/test_make_signature_checking.cpp
                                tests/test_make_skippable.cpp
                                tests/test_make_tuple_unpacking.cpp)
