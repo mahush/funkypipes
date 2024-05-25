@@ -86,3 +86,37 @@ TEST(MakeRawPipe, callables_forwarding_refererence__composed__references_are_pre
   result++;
   ASSERT_EQ(argument, 2);
 }
+
+TEST(MakeRawPipe, non_copyable_callables__composed__works) {
+  struct NonCopyableFn {
+    NonCopyableFn() = default;
+    ~NonCopyableFn() = default;
+    NonCopyableFn(const NonCopyableFn&) = delete;
+    NonCopyableFn(NonCopyableFn&&) = default;
+    NonCopyableFn& operator=(const NonCopyableFn&) = delete;
+    NonCopyableFn& operator=(NonCopyableFn&&) = delete;
+
+    int operator()(int value) const { return value; }
+  };
+
+  auto pipe = makeRawPipe(NonCopyableFn{}, NonCopyableFn{}, NonCopyableFn{});
+  EXPECT_EQ(0, pipe(0));
+}
+
+TEST(MakeRawPipe, callables_with_non_copyable_arguments__composed__works) {
+  struct NonCopyableArg {
+    explicit NonCopyableArg(int arg) : arg_{arg} {}
+    ~NonCopyableArg() = default;
+    NonCopyableArg(const NonCopyableArg&) = delete;
+    NonCopyableArg(NonCopyableArg&&) = default;
+    NonCopyableArg& operator=(const NonCopyableArg&) = delete;
+    NonCopyableArg& operator=(NonCopyableArg&&) = delete;
+    int arg_;
+  };
+  auto lambda = [](NonCopyableArg arg) { return arg; };
+
+  auto pipe = makeRawPipe(lambda, lambda, lambda);
+  auto res = pipe(NonCopyableArg{0});
+
+  EXPECT_EQ(0, res.arg_);
+}
