@@ -10,6 +10,7 @@
 #define FUNKYPIPES_MAKE_PIPE_HPP
 
 #include "funkypipes/details/make_fallback.hpp"
+#include "funkypipes/details/make_funky_void_returning.hpp"
 #include "funkypipes/details/make_raw_pipe.hpp"
 #include "funkypipes/details/make_signature_checking.hpp"
 #include "funkypipes/details/make_skippable.hpp"
@@ -21,18 +22,19 @@ namespace funkypipes {
 template <typename... TFns>
 auto makePipe(TFns&&... fns) {
   using namespace details;
-  return makeTuplePacking(makeRawPipe(makeTupleUnpacking(makeSignatureChecking(std::forward<TFns>(fns)))...));
+  return makeTuplePacking(
+      makeRawPipe(makeTupleUnpacking(makeFunkyVoidReturning(makeSignatureChecking(std::forward<TFns>(fns))))...));
 }
 
 template <typename TFn>
 auto andThen(TFn&& fn) {
   using namespace details;
-  return makeSkippable(makeTupleUnpacking(makeSignatureChecking(std::forward<TFn>(fn))));
+  return makeSkippable(makeTupleUnpacking(makeFunkyVoidReturning(makeSignatureChecking(std::forward<TFn>(fn)))));
 }
 
 template <typename TFn>
 auto orElse(TFn&& fn) {
-  return details::makeFallback(std::forward<TFn>(fn));
+  return details::makeFallback(details::makeFunkyVoidReturning(std::forward<TFn>(fn)));
 }
 
 }  // namespace funkypipes

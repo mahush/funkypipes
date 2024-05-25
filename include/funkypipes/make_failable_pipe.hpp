@@ -9,6 +9,7 @@
 #ifndef FUNKYPIPES_MAKE_FAILABLE_PIPE_HPP
 #define FUNKYPIPES_MAKE_FAILABLE_PIPE_HPP
 
+#include "funkypipes/details/make_funky_void_returning.hpp"
 #include "funkypipes/details/make_arg_optional.hpp"
 #include "funkypipes/details/make_raw_pipe.hpp"
 #include "funkypipes/details/make_signature_checking.hpp"
@@ -30,7 +31,7 @@ template <typename... TFns>
 auto makeFailablePipe(TFns&&... fns) {
   using namespace details;
   return makeTuplePacking(makeArgOptional(
-      makeRawPipe(makeSkippable(makeTupleUnpacking(makeSignatureChecking(std::forward<TFns>(fns))))...)));
+      makeRawPipe(makeSkippable(makeTupleUnpacking(makeFunkyVoidReturning(makeSignatureChecking(std::forward<TFns>(fns)))))...)));
 }
 
 }  // namespace funkypipes
