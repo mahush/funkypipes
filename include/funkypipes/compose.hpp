@@ -9,6 +9,7 @@
 #ifndef FUNKYPIPES_COMPOSE_HPP
 #define FUNKYPIPES_COMPOSE_HPP
 
+#include "funkypipes/details/compose_raw.hpp"
 #include "funkypipes/details/make_signature_checking.hpp"
 #include "funkypipes/details/make_skippable.hpp"
 #include "funkypipes/details/traits.hpp"
@@ -22,38 +23,26 @@ auto ensureOptional(TArg&& arg) {
   return OptionalType{std::forward<TArg>(arg)};
 }
 
-// Helper function template overload that terminates the recursion. The given callable essentially represents the
-// composition. To make sure that the first callable in the chain is always called with an optional argument (as
-// expected by the skippable callables) ensureOptional is applied to the argument.
+// Helper function template to decorates the composition in order to ensure that the first callable in
+// the chain is always called with an optional argument (as expected by the skippable callables).
+// Furthermore, to support the composition to be called with zero or multiple parameters. Therefore the
+// returned lambda accepts its args as parameter pack, applies ensureOptional and potentionally combines them as tuple.
 template <typename TFn>
-auto composeSkippables(TFn&& fn) {
-  return [fn_ = std::forward<TFn>(fn)](auto&& arg) mutable {
-    return fn_(ensureOptional(std::forward<decltype(arg)>(arg)));
-  };
+auto extendCallability(TFn&& fn) {
+  return
+      [fn = std::forward<TFn>(fn)](auto&& arg) mutable { return fn(ensureOptional(std::forward<decltype(arg)>(arg))); };
 }
-
-// Helper function template overload that creates a composition out of an arbitrary number of given callables. It
-// composes the first two callables into a new lambda that, when called, executes the first callable and passes its
-// result to the second callable. The function then recursively composes this
-// combined lambda with the rest of the provided callables.
-template <typename TFn1, typename TFn2, typename... TFnOthers>
-auto composeSkippables(TFn1&& fn_1, TFn2&& fn_2, TFnOthers&&... fn_others) {
-  auto chained_fn = [fn_1_ = std::forward<TFn1>(fn_1), fn_2_ = std::forward<TFn2>(fn_2)](auto&& arg) mutable {
-    return fn_2_(fn_1_(std::forward<decltype(arg)>(arg)));
-  };
-  return composeSkippables(std::move(chained_fn), std::forward<TFnOthers>(fn_others)...);
-}
-
 }  // namespace funkypipes::details
 
 namespace funkypipes {
 
-// Function template that creates a composition out of the given callables. It makes each callable "skippable" and
-// "signature checking", afterwards the callables are composes into a single callable chain using ComposeSkippables.
+// Function template that creates a composition out of the given callables. Each callable is decorated to be
+// "skippable" and "signature checking", afterwards the callables are composes into a single callable
+// chain using composeRaw. Finally the callable chain is decorated to have extended call ability.
 template <typename... TFns>
 auto compose(TFns&&... fns) {
   using namespace details;
-  return composeSkippables(makeSkippable(makeSignatureChecking(std::forward<TFns>(fns)))...);
+  return extendCallability(composeRaw(makeSkippable(makeSignatureChecking(std::forward<TFns>(fns)))...));
 }
 
 }  // namespace funkypipes
