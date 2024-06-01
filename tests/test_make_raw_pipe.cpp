@@ -9,114 +9,68 @@
 #include <gtest/gtest.h>
 
 #include "funkypipes/details/make_raw_pipe.hpp"
+#include "predefined/execution_semantics/make_pipe_tests.hpp"
 
-using namespace funkypipes;
-using namespace funkypipes::details;
+namespace funkypipes::test {
 
-int incrementFn(int value) {
-  value++;
-  return value;
-};
+using namespace execution_semantics;
 
-TEST(MakeRawPipe, single_callable__composed__works) {
-  auto pipe = makeRawPipe(incrementFn);
+auto makeRawPipeFn = [](auto&&... args) { return details::makeRawPipe(std::forward<decltype(args)>(args)...); };
 
-  auto result = pipe(0);
-  ASSERT_EQ(result, 1);
+// feature: composing variable amount of callables
+TEST(MakeRawPipe, singleCallable_composed_works) {
+  ASSERT_NO_FATAL_FAILURE(singleCallable_composed_works(makeRawPipeFn));
+}
+TEST(MakeRawPipe, twoCallables_composed_works) { ASSERT_NO_FATAL_FAILURE(twoCallables_composed_works(makeRawPipeFn)); }
+TEST(MakeRawPipe, threeCallables_composed_works) {
+  ASSERT_NO_FATAL_FAILURE(threeCallables_composed_works(makeRawPipeFn));
 }
 
-TEST(MakeRawPipe, two_callables__composed__works) {
-  auto pipe = makeRawPipe(incrementFn, incrementFn);
-
-  auto result = pipe(0);
-  ASSERT_EQ(result, 2);
+// feature: callables - types
+TEST(MakeRawPipe, differentCallableTypes_composed_works) {
+  ASSERT_NO_FATAL_FAILURE(differentCallableTypes_composed_works(makeRawPipeFn));
 }
 
-TEST(MakeRawPipe, three_callables__composed__works) {
-  auto pipe = makeRawPipe(incrementFn, incrementFn, incrementFn);
-
-  auto result = pipe(0);
-  ASSERT_EQ(result, 3);
+// feature: callables - generic callables
+TEST(MakeRawPipe, genericLambdaPipe_calledWithDifferentTypes_typeSpecificChainExecuted) {
+  ASSERT_NO_FATAL_FAILURE(genericLambdaPipe_calledWithDifferentTypes_typeSpecificChainExecuted(makeRawPipeFn));
+}
+TEST(MakeRawPipe, overloadedFunctorsPipe_calledWithEachType_typeSpecificChainExecuted) {
+  ASSERT_NO_FATAL_FAILURE(overloadedFunctorsPipe_calledWithEachType_typeSpecificChainExecuted(makeRawPipeFn));
 }
 
-TEST(MakeRawPipe, lambdas_composition_with_value_argument__called_with_lvalue__works) {
-  auto lambda_1 = [](int value) -> int { return value; };
-  auto lambda_2 = [](int value) -> std::string { return std::to_string(value); };
-
-  auto pipe = makeRawPipe(lambda_1, lambda_2);
-
-  int argument{0};
-  auto result = pipe(argument);
-  ASSERT_EQ(result, "0");
+// feature: callables - move only
+TEST(MakeRawPipe, nonCopyableCallables_composed_works) {
+  ASSERT_NO_FATAL_FAILURE(nonCopyableCallables_composed_works(makeRawPipeFn));
 }
 
-TEST(MakeRawPipe, lambdas_composition_with_value_argument__called_with_rvalue__works) {
-  auto lambda_1 = [](int value) -> int { return value; };
-  auto lambda_2 = [](int value) -> std::string { return std::to_string(value); };
-
-  auto pipe = makeRawPipe(lambda_1, lambda_2);
-
-  int argument{1};
-  auto result = pipe(std::move(argument));
-  ASSERT_EQ(result, "1");
+// feature: callables - assignable to std::function
+TEST(MakeRawPipe, genericPipe_assignedToStdFunctions_works) {
+  ASSERT_NO_FATAL_FAILURE(genericPipe_assignedToStdFunctions_works(makeRawPipeFn));
 }
 
-TEST(MakeRawPipe, callables_forwarding_const_refererence__composed__const_references_are_preserved) {
-  auto lambda = [](const int& value) -> const int& { return value; };
-
-  auto pipe = makeRawPipe(lambda, lambda);
-
-  int argument{0};
-  const int& result = pipe(argument);
-  ASSERT_EQ(result, 0);
-
-  argument++;
-  ASSERT_EQ(result, 1);
+// feature: callables - propagate exceptions
+TEST(MakeRawPipe, pipeComposed_callableThrows_exceptionPropagatedToCaller) {
+  ASSERT_NO_FATAL_FAILURE(pipeComposed_callableThrows_exceptionPropagatedToCaller(makeRawPipeFn));
 }
 
-TEST(MakeRawPipe, callables_forwarding_refererence__composed__references_are_preserved) {
-  auto lambda = [](int& value) -> int& { return value; };
-
-  auto pipe = makeRawPipe(lambda, lambda);
-
-  int argument{1};
-  int& result = pipe(argument);
-  ASSERT_EQ(result, 1);
-
-  result++;
-  ASSERT_EQ(argument, 2);
+// feature: data - value categories
+TEST(MakeRawPipe, compositionWithValueArgument_calledWithLValue_works) {
+  ASSERT_NO_FATAL_FAILURE(pipeComposed_callableThrows_exceptionPropagatedToCaller(makeRawPipeFn));
+}
+TEST(MakeRawPipe, compositionWithValueArgument_calledWithRValue_works) {
+  ASSERT_NO_FATAL_FAILURE(compositionWithValueArgument_calledWithRValue_works(makeRawPipeFn));
+}
+TEST(MakeRawPipe, callablesForwardingConstRefererence_composed_constReferencesArePreserved) {
+  ASSERT_NO_FATAL_FAILURE(callablesForwardingConstRefererence_composed_constReferencesArePreserved(makeRawPipeFn));
+}
+TEST(MakeRawPipe, callablesForwardingRefererence_composed_referencesArePreserved) {
+  ASSERT_NO_FATAL_FAILURE(callablesForwardingRefererence_composed_referencesArePreserved(makeRawPipeFn));
 }
 
-TEST(MakeRawPipe, non_copyable_callables__composed__works) {
-  struct NonCopyableFn {
-    NonCopyableFn() = default;
-    ~NonCopyableFn() = default;
-    NonCopyableFn(const NonCopyableFn&) = delete;
-    NonCopyableFn(NonCopyableFn&&) = default;
-    NonCopyableFn& operator=(const NonCopyableFn&) = delete;
-    NonCopyableFn& operator=(NonCopyableFn&&) = delete;
-
-    int operator()(int value) const { return value; }
-  };
-
-  auto pipe = makeRawPipe(NonCopyableFn{}, NonCopyableFn{}, NonCopyableFn{});
-  EXPECT_EQ(0, pipe(0));
+// feature: data - move only
+TEST(MakeRawPipe, callablesWithNonCopyableArguments_composed_works) {
+  ASSERT_NO_FATAL_FAILURE(callablesWithNonCopyableArguments_composed_works(makeRawPipeFn));
 }
 
-TEST(MakeRawPipe, callables_with_non_copyable_arguments__composed__works) {
-  struct NonCopyableArg {
-    explicit NonCopyableArg(int arg) : arg_{arg} {}
-    ~NonCopyableArg() = default;
-    NonCopyableArg(const NonCopyableArg&) = delete;
-    NonCopyableArg(NonCopyableArg&&) = default;
-    NonCopyableArg& operator=(const NonCopyableArg&) = delete;
-    NonCopyableArg& operator=(NonCopyableArg&&) = delete;
-    int arg_;
-  };
-  auto lambda = [](NonCopyableArg arg) { return arg; };
-
-  auto pipe = makeRawPipe(lambda, lambda, lambda);
-  auto res = pipe(NonCopyableArg{0});
-
-  EXPECT_EQ(0, res.arg_);
-}
+}  // namespace funkypipes::test
