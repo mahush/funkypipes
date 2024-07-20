@@ -11,6 +11,7 @@
 #include <functional>
 #include <optional>
 
+#include "funkypipes/funky_void.hpp"
 #include "funkypipes/make_auto_pipe.hpp"
 #include "predefined/execution_semantics/make_pipe_tests.hpp"
 
@@ -117,6 +118,21 @@ TEST(MakeAutoPipe, compositionWithoutArguments_called_isExecuted) {
   ASSERT_NO_FATAL_FAILURE(compositionWithoutArguments_called_isExecuted(makeAutoPipeFn));
 }
 
+// feature: data - void return type
+TEST(MakeAutoPipe, callablesReturningVoid_composedAsPipe_pipeReturnsVoid) {
+  ASSERT_NO_FATAL_FAILURE(callablesReturningVoid_composedAsPipe_pipeReturnsVoid(makeAutoPipeFn));
+}
+
+TEST(MakeAutoPipe, breakablePipeReturningVoid_breaks_pipeReturnsOptionalVoid) {
+  auto breaking_lambda = []() -> std::optional<int> { return std::nullopt; };
+  auto void_returning_lambda = [](int) -> void {};
+
+  auto pipe = makeAutoPipe(breaking_lambda, void_returning_lambda);
+
+  std::optional<FunkyVoid> result = pipe();
+  ASSERT_FALSE(result.has_value());
+}
+
 // feature: std::optional support
 static int function_1(bool flag) { return flag ? 7 : 0; };
 static std::string function_2(int value) { return std::to_string(value); };
@@ -188,7 +204,7 @@ TEST(MakeAutoPipe, pipeWithNonCopyableOptionalArguments_composed_works) {
   EXPECT_EQ(0, res.value().m_arg);
 }
 
-// feature: chain breaking
+// feature: chain breaking - skipping on nullopt
 TEST(MakeAutoPipe, lambdasComposition_intermediateLambdaReturnsNullopt_theChainBreaks) {
   auto breaking_lambda = [](bool) -> std::optional<int> { return std::nullopt; };
   auto subsequent_lambda = [](int) -> int {
@@ -200,6 +216,20 @@ TEST(MakeAutoPipe, lambdasComposition_intermediateLambdaReturnsNullopt_theChainB
 
   std::optional<int> result;
   EXPECT_NO_THROW(result = pipe(true));
+  EXPECT_FALSE(result.has_value());
+}
+
+TEST(MakeAutoPipe, breakablePipe_intermediateFunkyVoidReturningLambdaReturnsNullopt_theChainBreaks) {
+  auto breaking_lambda = []() -> std::optional<FunkyVoid> { return std::nullopt; };
+  auto subsequent_lambda = []() -> int {
+    throw std::exception();
+    return 0;
+  };
+
+  auto pipe = makeAutoPipe(breaking_lambda, subsequent_lambda);
+
+  std::optional<int> result;
+  EXPECT_NO_THROW(result = pipe());
   EXPECT_FALSE(result.has_value());
 }
 
@@ -217,15 +247,25 @@ TEST(MakeAutoPipe, lambdasComposition_calledWithNullopt_notingIsExecuted) {
   EXPECT_FALSE(result.has_value());
 }
 
-// TEST(MakeAutoPipe, voidReturnTypeCallable_compose_triggersStaticAssert)
-// {
-//   auto lambda_1 = [](bool) -> int { return 0; };
-//   auto lambda_2 = [](int) -> void {};
-//
-//   auto pipe = makeAutoPipe(lambda_1, lambda_2);
-//
-//   pipe(false);
-// }
+// feature: chain breaking - nested pipes
+TEST(MakeAutoPipe, nestedFailingPipeReturningVoid_composedAsPipe_topLevelPipeFails) {
+  auto failable_callable = [](bool fail) -> std::optional<int> { return fail ? std::nullopt : std::make_optional(1); };
+  auto void_returning_callable = [](int) -> void {};
+  auto failable_void_returning_pipe = makeAutoPipe(failable_callable, void_returning_callable);
+
+  auto string_returning_callable = []() -> std::string { return "result"; };
+
+  auto failable_top_level_pipe = makeAutoPipe(failable_void_returning_pipe, string_returning_callable);
+
+  {
+    std::optional<std::string> result = failable_top_level_pipe(false);
+    ASSERT_EQ(result, "result");
+  }
+  {
+    std::optional<std::string> result = failable_top_level_pipe(true);
+    ASSERT_FALSE(result.has_value());
+  }
+}
 
 // TEST(MakeAutoPipe,
 // missmatchingArgumentTypeCompostion_compose_triggersStaticAssert) {
