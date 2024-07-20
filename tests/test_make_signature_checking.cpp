@@ -86,12 +86,3 @@ TEST(MakeSignatureChecking, non_copyable_callable__called__works) {
 //   NotAnInt argument{};
 //   signature_checking_lambda(argument);
 // }
-
-// TEST(MakeSignatureChecking, callable_returning_void__called__triggers_static_assert) {
-//   auto lambda = [](int) {};
-//
-//   auto skippable_fn = makeSignatureChecking(lambda);
-//
-//   int argument{1};
-//   skippable_fn(argument);
-// }

@@ -8,6 +8,9 @@
 
 #include <gtest/gtest.h>
 
+#include <optional>
+
+#include "funkypipes/funky_void.hpp"
 #include "funkypipes/make_pipe.hpp"
 #include "predefined/execution_semantics/make_pipe_tests.hpp"
 
@@ -108,6 +111,21 @@ TEST(MakePipe, compositionWithoutArguments_called_isExecuted) {
   ASSERT_NO_FATAL_FAILURE(compositionWithoutArguments_called_isExecuted(makePipeFn));
 }
 
+// feature: data - void return type
+TEST(MakePipe, callablesReturningVoid_composedAsPipe_pipeReturnsVoid) {
+  ASSERT_NO_FATAL_FAILURE(callablesReturningVoid_composedAsPipe_pipeReturnsVoid(makePipeFn));
+}
+
+TEST(MakePipe, breakablePipeReturningVoid_breaks_pipeReturnsOptionalVoid) {
+  auto breaking_lambda = []() -> std::optional<int> { return std::nullopt; };
+  auto void_returning_lambda = [](int) -> void {};
+
+  auto pipe = makePipe(breaking_lambda, andThen(void_returning_lambda));
+
+  std::optional<FunkyVoid> result = pipe();
+  ASSERT_FALSE(result.has_value());
+}
+
 // feature: std::optional support
 static int function_1(bool flag) { return flag ? 7 : 0; };
 static std::string function_2(int value) { return std::to_string(value); };
@@ -128,7 +146,7 @@ TEST(MakePipe, pipeAcceptingOptional_calledWithRValueOptional_isExecuted) {
   ASSERT_EQ(result, "77");
 }
 
-// feature: chain breaking
+// feature: chain breaking - skipping on nullopt
 TEST(MakePipe, lambdasComposition_intermediateLambdaReturnsNullopt_theChainBreaks) {
   auto breaking_lambda = [](bool) -> std::optional<int> { return std::nullopt; };
   auto subsequent_lambda = [](int) -> int {
@@ -143,6 +161,20 @@ TEST(MakePipe, lambdasComposition_intermediateLambdaReturnsNullopt_theChainBreak
   EXPECT_FALSE(res.has_value());
 }
 
+TEST(MakePipe, breakablePipe_intermediateFunkyVoidReturningLambdaReturnsNullopt_theChainBreaks) {
+  auto breaking_lambda = []() -> std::optional<FunkyVoid> { return std::nullopt; };
+  auto subsequent_lambda = []() -> int {
+    throw std::exception();
+    return 0;
+  };
+
+  auto pipe = makePipe(breaking_lambda, andThen(subsequent_lambda));
+
+  std::optional<int> result;
+  EXPECT_NO_THROW(result = pipe());
+  EXPECT_FALSE(result.has_value());
+}
+
 TEST(MakePipe, lambdasComposition_calledWithNullopt_notingIsExecuted) {
   auto lambda = [](int) -> int {
     throw std::exception();
@@ -155,6 +187,26 @@ TEST(MakePipe, lambdasComposition_calledWithNullopt_notingIsExecuted) {
   std::optional<int> res;
   EXPECT_NO_THROW(res = pipe(arg));
   EXPECT_FALSE(res.has_value());
+}
+
+// feature: chain breaking - nested pipes
+TEST(MakePipe, nestedFailingPipeReturningVoid_composedAsPipe_topLevelPipeFails) {
+  auto failable_callable = [](bool fail) -> std::optional<int> { return fail ? std::nullopt : std::make_optional(1); };
+  auto void_returning_callable = [](int) -> void {};
+  auto failable_void_returning_pipe = makePipe(failable_callable, andThen(void_returning_callable));
+
+  auto string_returning_callable = []() -> std::string { return "result"; };
+
+  auto failable_top_level_pipe = makePipe(failable_void_returning_pipe, andThen(string_returning_callable));
+
+  {
+    std::optional<std::string> result = failable_top_level_pipe(false);
+    ASSERT_EQ(result, "result");
+  }
+  {
+    std::optional<std::string> result = failable_top_level_pipe(true);
+    ASSERT_FALSE(result.has_value());
+  }
 }
 
 }  // namespace funkypipes::test

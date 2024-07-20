@@ -21,10 +21,6 @@ struct AssertInvocability {
   static_assert(std::is_invocable_v<TFn, TArgs...>,
                 "Callable TFn does not support arguments of type TArgs. Look for AssertInvocability in the compiler's "
                 "error output to figure out the relevant types TFn and TArg.");
-  using ResultType = typename std::invoke_result<TFn, TArgs...>::type;
-  static_assert(not std::is_void_v<ResultType>,
-                "Result of TFn may not be void. Look for AssertInvocability in the compiler's error output to figure "
-                "out the relevant types TFn and TArgs.");
 };
 
 // Helper template function that adds static_asserts to the given function to check the signature of the given function.

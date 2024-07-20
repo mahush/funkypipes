@@ -229,13 +229,3 @@ TEST(MakeSkippable, callable_providing_reference__called__returns_optional_refer
 //   auto argument = std::make_optional({NotAnInt});
 //   skippable_lambda(argument);
 // }
-
-// TEST(MakeSkippable, callable_returning_void__triggers_static_assert) {
-//   auto lambda = [](int) {};
-//
-//   auto skippable_fn = makeSkippable(lambda);
-//
-//   std::optional<int> argument{1};
-//   skippable_fn(argument);
-// }
-
