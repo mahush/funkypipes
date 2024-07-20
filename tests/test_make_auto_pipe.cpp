@@ -205,7 +205,7 @@ TEST(MakeAutoPipe, pipeWithNonCopyableOptionalArguments_composed_works) {
 }
 
 // feature: chain breaking - skipping on nullopt
-TEST(MakeAutoPipe, lambdasComposition_intermediateLambdaReturnsNullopt_theChainBreaks) {
+TEST(MakeAutoPipe, breakablePipe_intermediateLambdaReturnsNullopt_theChainBreaks) {
   auto breaking_lambda = [](bool) -> std::optional<int> { return std::nullopt; };
   auto subsequent_lambda = [](int) -> int {
     throw std::exception();

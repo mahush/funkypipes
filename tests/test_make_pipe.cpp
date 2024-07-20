@@ -147,7 +147,7 @@ TEST(MakePipe, pipeAcceptingOptional_calledWithRValueOptional_isExecuted) {
 }
 
 // feature: chain breaking - skipping on nullopt
-TEST(MakePipe, lambdasComposition_intermediateLambdaReturnsNullopt_theChainBreaks) {
+TEST(MakePipe, breakablePipe_intermediateLambdaReturnsNullopt_theChainBreaks) {
   auto breaking_lambda = [](bool) -> std::optional<int> { return std::nullopt; };
   auto subsequent_lambda = [](int) -> int {
     throw std::exception();
