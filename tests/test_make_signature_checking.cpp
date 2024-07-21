@@ -9,75 +9,52 @@
 #include <gtest/gtest.h>
 
 #include "funkypipes/details/make_signature_checking.hpp"
+#include "predefined/signature_propagation/standard_tests.hpp"
 
 using namespace funkypipes;
 using namespace funkypipes::details;
+using namespace funkypipes::test;
 
-TEST(MakeSignatureChecking, callable__called_with_lvalue__works) {
-  auto lambda = [](int value) { return std::to_string(value); };
+auto makeSignatureCheckingFn = [](auto&&... args) {
+  return makeSignatureChecking(std::forward<decltype(args)>(args)...);
+};
 
-  auto signature_checking_lambda = makeSignatureChecking(lambda);
-
-  int argument{1};
-  std::string res = signature_checking_lambda(argument);
-  EXPECT_EQ(res, "1");
+// feature: callables - move only
+TEST(MakeSignatureChecking, nonCopyableCallable_called_works) {
+  ASSERT_NO_FATAL_FAILURE(signature_propagation::nonCopyableCallable_called_works(makeSignatureCheckingFn));
 }
 
-TEST(MakeSignatureChecking, callable__called_with_rvalue__works) {
-  auto lambda = [](int value) { return std::to_string(value); };
-
-  auto signature_checking_lambda = makeSignatureChecking(lambda);
-
-  int argument{1};
-  std::string res = signature_checking_lambda(std::move(argument));
-  EXPECT_EQ(res, "1");
+// feature: data - value categories
+TEST(MakeSignatureChecking, callable_calledWithLValue_works) {
+  ASSERT_NO_FATAL_FAILURE(
+      signature_propagation::callableHavingValueArgument_calledWithLValue_works(makeSignatureCheckingFn));
 }
 
-TEST(MakeSignatureChecking, callable__called_with_non_copyable_value__works) {
-  struct NonCopyableArg {
-    ~NonCopyableArg() = default;
-    NonCopyableArg(const NonCopyableArg&) = delete;
-    NonCopyableArg(NonCopyableArg&&) = default;
-    NonCopyableArg& operator=(const NonCopyableArg&) = delete;
-    NonCopyableArg& operator=(NonCopyableArg&&) = delete;
-  };
-
-  auto lambda = [](NonCopyableArg arg) { return arg; };
-
-  auto signature_checking_lambda = makeSignatureChecking(lambda);
-
-  NonCopyableArg argument{};
-  NonCopyableArg res = signature_checking_lambda(std::move(argument));
+TEST(MakeSignatureChecking, callable_calledWithRValue_works) {
+  ASSERT_NO_FATAL_FAILURE(
+      signature_propagation::callableHavingValueArgument_calledWithRValue_works(makeSignatureCheckingFn));
 }
 
-TEST(MakeSignatureChecking, callable__called_without_parameter__works) {
-  auto lambda = []() { return "result"; };
-
-  auto signature_checking_lambda = makeSignatureChecking(lambda);
-
-  std::string res = signature_checking_lambda();
-  EXPECT_EQ(res, "result");
+// feature: data - move only
+TEST(MakeSignatureChecking, callable_calledWithNonCopyableValue_works) {
+  ASSERT_NO_FATAL_FAILURE(signature_propagation::callable_calledWithNonCopyableValue_works(makeSignatureCheckingFn));
 }
 
-TEST(MakeSignatureChecking, non_copyable_callable__called__works) {
-  struct NonCopyableFn {
-    ~NonCopyableFn() = default;
-    NonCopyableFn(const NonCopyableFn&) = delete;
-    NonCopyableFn(NonCopyableFn&&) = default;
-    NonCopyableFn& operator=(const NonCopyableFn&) = delete;
-    NonCopyableFn& operator=(NonCopyableFn&&) = delete;
-
-    int operator()(int value) const { return value; }
-  };
-
-  auto skippable_fn = makeSignatureChecking(NonCopyableFn{});
-
-  int argument{1};
-  int res = skippable_fn(argument);
-  EXPECT_EQ(res, 1);
+// feature: data - any number of arguments
+TEST(MakeSignatureChecking, callable_calledWithoutParameter_works) {
+  ASSERT_NO_FATAL_FAILURE(signature_propagation::callable_calledWithoutParameter_works(makeSignatureCheckingFn));
 }
 
-// TEST(MakeSignatureChecking, callable__called_with_unsupported_argument__triggers_static_assert) {
+TEST(MakeSignatureChecking, callable_calledWithMultipleParameter_works) {
+  ASSERT_NO_FATAL_FAILURE(signature_propagation::callable_calledWithMultipleParameter_works(makeSignatureCheckingFn));
+}
+
+// feature: data - void return type
+TEST(MakeSignatureChecking, callableReturningVoid_called_works) {
+  ASSERT_NO_FATAL_FAILURE(signature_propagation::callableReturningVoid_called_works(makeSignatureCheckingFn));
+}
+
+// TEST(MakeSignatureChecking, callable_calledWithUnsupportedArgument_triggersStaticAssert) {
 //   auto lambda = [](int value) { return value; };
 //
 //   auto signature_checking_lambda = makeSignatureChecking(lambda);
