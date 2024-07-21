@@ -25,6 +25,7 @@ set_target_properties(gtest gtest_main PROPERTIES
 # Setup for testing
 enable_testing()
 add_executable(test_funkypipes examples/readme_examples.cpp
+                               tests/test_and_then.cpp
                                tests/test_make_arg_optional.cpp
                                tests/test_make_auto_pipe.cpp
                                tests/test_make_funky_void_removing.cpp
