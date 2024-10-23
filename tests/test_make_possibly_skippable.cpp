@@ -9,33 +9,27 @@
 #include <gtest/gtest.h>
 
 #include "funkypipes/details/make_possibly_skippable.hpp"
+#include "predefined/execution_semantics/make_skippable_tests.hpp"
 
 using namespace funkypipes;
 using namespace funkypipes::details;
+using namespace funkypipes::test;
+
+auto makePossiblySkippableFn = [](auto&&... args) {
+  return makePossiblySkippable(std::forward<decltype(args)>(args)...);
+};
 
 // ########################################################################
 // case 1: integration tests (check if base class signatures are available)
 // ########################################################################
 TEST(MakePossiblySkippable, callable_having_value_argument__called_with_lvalue_optional__works) {
-  auto lambda = [](int value) { return std::to_string(value); };
-
-  auto skippable_lambda = makePossiblySkippable(lambda);
-
-  std::optional<int> argument{1};
-  std::optional<std::string> result = skippable_lambda(argument);
-  EXPECT_TRUE(result.has_value());
-  EXPECT_EQ(result.value(), "1");
+  ASSERT_NO_FATAL_FAILURE(
+      execution_semantics::callableHavingValueArgument_calledWithLValueOptional_works(makePossiblySkippableFn));
 }
 
 TEST(MakePossiblySkippable, callable_having_value_argument__called_with_rvalue_optional__works) {
-  auto lambda = [](int value) { return std::to_string(value); };
-
-  auto skippable_lambda = makePossiblySkippable(lambda);
-
-  std::optional<int> argument{1};
-  std::optional<std::string> result = skippable_lambda(std::move(argument));
-  EXPECT_TRUE(result.has_value());
-  EXPECT_EQ(result.value(), "1");
+  ASSERT_NO_FATAL_FAILURE(
+      execution_semantics::callableHavingValueArgument_calledWithRValueOptional_works(makePossiblySkippableFn));
 }
 
 // #####################
