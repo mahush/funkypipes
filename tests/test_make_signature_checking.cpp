@@ -26,13 +26,13 @@ TEST(MakeSignatureChecking, nonCopyableCallable_called_works) {
 
 // feature: data - value categories
 TEST(MakeSignatureChecking, callable_calledWithLValue_works) {
-  ASSERT_NO_FATAL_FAILURE(
-      signature_propagation::callableHavingValueArgument_calledWithLValue_works(makeSignatureCheckingFn));
+  ASSERT_NO_FATAL_FAILURE(signature_propagation::callableForwardingItsValueArgument_calledWithLValue_returnsArguments(
+      makeSignatureCheckingFn));
 }
 
 TEST(MakeSignatureChecking, callable_calledWithRValue_works) {
-  ASSERT_NO_FATAL_FAILURE(
-      signature_propagation::callableHavingValueArgument_calledWithRValue_works(makeSignatureCheckingFn));
+  ASSERT_NO_FATAL_FAILURE(signature_propagation::callableForwardingItsValueArgument_calledWithRValue_returnsArguments(
+      makeSignatureCheckingFn));
 }
 
 // feature: data - move only

@@ -38,25 +38,25 @@ void nonCopyableCallable_called_works(TFn decorating_fn) {
 
 // feature: data - value categories
 template <typename TFn>
-void callableHavingValueArgument_calledWithLValue_works(TFn decorating_fn) {
-  auto lambda = [](int value) { return std::to_string(value); };
+void callableForwardingItsValueArgument_calledWithLValue_returnsArguments(TFn decorating_fn) {
+  auto lambda = [](int value) { return value; };
 
   auto decorated_fn = decorating_fn(lambda);
 
   int argument{1};
-  std::string result = decorated_fn(argument);
-  EXPECT_EQ(result, "1");
+  const int result = decorated_fn(argument);
+  EXPECT_EQ(result, 1);
 }
 
 template <typename TFn>
-void callableHavingValueArgument_calledWithRValue_works(TFn decorating_fn) {
-  auto lambda = [](int value) { return std::to_string(value); };
+void callableForwardingItsValueArgument_calledWithRValue_returnsArguments(TFn decorating_fn) {
+  auto lambda = [](int value) { return value; };
 
   auto decorated_fn = decorating_fn(lambda);
 
   int argument{1};
-  std::string result = decorated_fn(std::move(argument));
-  EXPECT_EQ(result, "1");
+  const int result = decorated_fn(std::move(argument));
+  EXPECT_EQ(result, 1);
 }
 
 template <typename TFn>
