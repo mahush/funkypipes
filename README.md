@@ -111,3 +111,49 @@ This library helps in construction of data processing pipelines, out of a given 
   ASSERT_EQ(pipe3(0), 14);
 ```
 
+## Project Directory Structure
+
+```
+/funkypipes
+│
+├── /examples                        # Example files
+├── /includes                        # Header files
+│   ├── /details                     # Internal header files
+├── /test                            # Test files
+│   ├── /predefined                  # Predefined tests
+│   │   ├── /callable_type           # Predefined callable Type tests
+│   │   ├── /signature_propagation   # Predefined signature propagation tests
+│   │   └── /execution_semantics     # Predefined execution semantics tests
+│   ├── /utils                       # Utility files
+│   └── /module_specific             # Module-Specific tests
+```
+
+---
+
+**Examples**: Usage examples of this lib's features implemented as gtest tests.
+
+**Header Files**: The header files of this lib.
+
+  - **Internal Header Files**:
+  Library internal header files. Via the `details` subfolder and the `details` namespace the internal implementation details are separated from the public API.
+
+**Test Files**:
+  This folder contains the tests based on the gtest framework.
+
+   - **Predefined Tests**:
+   These tests focus on standardized criteria for decorators and higher-order functions. These tests can be reused across different modules.
+
+       - **Predefined Callable Type Tests**: Ensures support for various callable types like functions, lambdas, callable objects or special cases like move-only callables.
+
+       - **Predefined Signature Propagation Tests**: Verifies that the function’s signature (arguments and return values) is correctly preserved through decorators or higher-order functions.
+
+       - **Predefined Execution Semantics Tests**: Checks the functional behavior of decorators and higher-order-functions.
+
+  - **Utility Files**:
+    Files that provide code that supports testing.
+
+  - **Module-Specific Tests**:
+     These tests are tailored to individual modules and can utilize predefined tests where applicable. They ensure that the unique functionality of specific compilation units is thoroughly validated.
+
+---
+
