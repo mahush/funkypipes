@@ -44,13 +44,13 @@ TEST(MakePossiblySkippable, nonCopyableCallable_called_works) {
 
 // feature: data - value categories
 TEST(MakePossiblySkippable, callableHavingValueArgument_calledWithLValue_works) {
-  ASSERT_NO_FATAL_FAILURE(
-      signature_propagation::callableHavingValueArgument_calledWithLValue_works(makePossiblySkippableFn));
+  ASSERT_NO_FATAL_FAILURE(signature_propagation::callableForwardingItsValueArgument_calledWithLValue_returnsArguments(
+      makePossiblySkippableFn));
 }
 
 TEST(MakePossiblySkippable, callablHavingValueArgumente_calledWithRValue_works) {
-  ASSERT_NO_FATAL_FAILURE(
-      signature_propagation::callableHavingValueArgument_calledWithRValue_works(makePossiblySkippableFn));
+  ASSERT_NO_FATAL_FAILURE(signature_propagation::callableForwardingItsValueArgument_calledWithRValue_returnsArguments(
+      makePossiblySkippableFn));
 }
 TEST(MakePossiblySkippable, callableForwardingConstReference_calledWithConstReference_returnsConstReference) {
   ASSERT_NO_FATAL_FAILURE(
