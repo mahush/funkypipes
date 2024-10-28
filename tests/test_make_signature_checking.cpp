@@ -42,11 +42,13 @@ TEST(MakeSignatureChecking, callable_calledWithNonCopyableValue_works) {
 
 // feature: data - any number of arguments
 TEST(MakeSignatureChecking, callable_calledWithoutParameter_works) {
-  ASSERT_NO_FATAL_FAILURE(signature_propagation::callable_calledWithoutParameter_works(makeSignatureCheckingFn));
+  ASSERT_NO_FATAL_FAILURE(
+      signature_propagation::callableReturningValue_calledWithoutArguments_works(makeSignatureCheckingFn));
 }
 
 TEST(MakeSignatureChecking, callable_calledWithMultipleParameter_works) {
-  ASSERT_NO_FATAL_FAILURE(signature_propagation::callable_calledWithMultipleParameter_works(makeSignatureCheckingFn));
+  ASSERT_NO_FATAL_FAILURE(
+      signature_propagation::callableReturningValue_calledWithMultipleArguments_works(makeSignatureCheckingFn));
 }
 
 // feature: data - void return type

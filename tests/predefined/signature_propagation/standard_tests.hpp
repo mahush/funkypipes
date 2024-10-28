@@ -111,7 +111,7 @@ void callable_calledWithNonCopyableValue_works(TFn decorating_fn) {
 
 // feature: data - any number of arguments
 template <typename TFn>
-void callable_calledWithoutParameter_works(TFn decorating_fn) {
+void callableReturningValue_calledWithoutArguments_works(TFn decorating_fn) {
   auto lambda = []() { return "result"; };
 
   auto decorated_fn = decorating_fn(lambda);
@@ -121,7 +121,7 @@ void callable_calledWithoutParameter_works(TFn decorating_fn) {
 }
 
 template <typename TFn>
-void callable_calledWithMultipleParameter_works(TFn decorating_fn) {
+void callableReturningValue_calledWithMultipleArguments_works(TFn decorating_fn) {
   auto lambda = [](int arg1, int arg2) -> int { return arg1 + arg2; };
 
   auto decorated_fn = decorating_fn(lambda);
