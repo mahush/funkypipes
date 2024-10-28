@@ -10,26 +10,17 @@
 
 #include "funkypipes/details/make_funky_void_returning.hpp"
 #include "funkypipes/funky_void.hpp"
+#include "predefined/signature_propagation/standard_tests.hpp"
 
 using namespace funkypipes;
 using namespace funkypipes::details;
+using namespace funkypipes::test;
+
+auto makeFunkyVoidReturningFn = [](auto&& arg) { return makeFunkyVoidReturning(std::forward<decltype(arg)>(arg)); };
 
 // feature callables: move only
 TEST(MakeFunkyVoidReturning, nonCopyableCallable_called_works) {
-  struct NonCopyableFn {
-    ~NonCopyableFn() = default;
-    NonCopyableFn(const NonCopyableFn&) = delete;
-    NonCopyableFn(NonCopyableFn&&) = default;
-    NonCopyableFn& operator=(const NonCopyableFn&) = delete;
-    NonCopyableFn& operator=(NonCopyableFn&&) = delete;
-
-    int operator()(int value) const { return value; }
-  };
-
-  auto decorated_fn = makeFunkyVoidReturning(NonCopyableFn{});
-
-  int result = decorated_fn(1);
-  EXPECT_EQ(result, 1);
+  ASSERT_NO_FATAL_FAILURE(signature_propagation::nonCopyableCallable_called_works(makeFunkyVoidReturningFn));
 }
 
 // feature data: value category
@@ -42,14 +33,9 @@ TEST(MakeFunkyVoidReturning, callableReturningVoid_calledWithLValue_works) {
   FunkyVoid result = decorated_lambda(argument);
 }
 
-TEST(MakeFunkyVoidReturning, callableForwardingItsArgument_calledWithLValue_works) {
-  auto lambda = [](int arg) { return arg; };
-
-  auto decorated_lambda = makeFunkyVoidReturning(lambda);
-
-  int argument{0};
-  const int result = decorated_lambda(argument);
-  ASSERT_EQ(result, argument);
+TEST(MakeFunkyVoidReturning, callableForwardingItsValueArgument_calledWithLValue_works) {
+  ASSERT_NO_FATAL_FAILURE(signature_propagation::callableForwardingItsValueArgument_calledWithLValue_returnsArguments(
+      makeFunkyVoidReturningFn));
 }
 
 TEST(MakeFunkyVoidReturning, callableReturningVoid_calledWithRValue_returnsFunkyVoid) {
@@ -60,60 +46,50 @@ TEST(MakeFunkyVoidReturning, callableReturningVoid_calledWithRValue_returnsFunky
   FunkyVoid result = decorated_lambda(std::move(argument));
 }
 
-TEST(MakeFunkyVoidReturning, callableForwardingItsArgument_calledWithRValue_returnsArguments) {
-  auto lambda = [](int arg) { return arg; };
-
-  auto decorated_lambda = makeFunkyVoidReturning(lambda);
-
-  int argument{0};
-  const int result = decorated_lambda(std::move(argument));
-  ASSERT_EQ(result, argument);
+TEST(MakeFunkyVoidReturning, callableForwardingItsValueArgument_calledWithRValue_returnsArguments) {
+  ASSERT_NO_FATAL_FAILURE(signature_propagation::callableForwardingItsValueArgument_calledWithRValue_returnsArguments(
+      makeFunkyVoidReturningFn));
 }
 
 TEST(MakeFunkyVoidReturning, callableForwardingItsArgument_calledWithReference_referenceIsPreserved) {
-  auto lambda = [](int& arg) -> int& { return arg; };
-
-  auto decorated_lambda = makeFunkyVoidReturning(lambda);
-
-  int argument{41};
-  int& result = decorated_lambda(argument);
-  result++;
-  ASSERT_EQ(result, 42);
+  ASSERT_NO_FATAL_FAILURE(signature_propagation::callableForwardingReference_calledWithReference_returnsReference(
+      makeFunkyVoidReturningFn));
 }
 
-TEST(MakeFunkyVoidReturning, callableForwardingItsArgument_calledWithConstTeference_constReferenceIsPreserved) {
-  auto lambda = [](const int& arg) -> const int& { return arg; };
-
-  auto decorated_lambda = makeFunkyVoidReturning(lambda);
-
-  int argument{0};
-  const int& result = decorated_lambda(argument);
-  argument++;
-  ASSERT_EQ(result, argument);
+TEST(MakeFunkyVoidReturning, callableForwardingItsArgument_calledWithConstReference_constReferenceIsPreserved) {
+  ASSERT_NO_FATAL_FAILURE(
+      signature_propagation::callableForwardingConstReference_calledWithConstReference_returnsConstReference(
+          makeFunkyVoidReturningFn));
 }
 
 // feature data: move only
 TEST(MakeFunkyVoidReturning, callable_calledWithNonCopyableValue_works) {
-  struct NonCopyableArg {
-    ~NonCopyableArg() = default;
-    NonCopyableArg(const NonCopyableArg&) = delete;
-    NonCopyableArg(NonCopyableArg&&) = default;
-    NonCopyableArg& operator=(const NonCopyableArg&) = delete;
-    NonCopyableArg& operator=(NonCopyableArg&&) = delete;
-  };
-
-  auto lambda = [](NonCopyableArg arg) { return arg; };
-
-  auto decorated_lambda = makeFunkyVoidReturning(lambda);
-
-  NonCopyableArg argument{};
-  NonCopyableArg result = decorated_lambda(std::move(argument));
+  ASSERT_NO_FATAL_FAILURE(signature_propagation::callable_calledWithNonCopyableValue_works(makeFunkyVoidReturningFn));
 }
 
 // feature data: any number of arguments
-TEST(MakeFunkyVoidReturning, callableWithMultipleArguments_called_works) {
+TEST(MakeFunkyVoidReturning, callableReturningValue_calledWithoutArguments_works) {
+  ASSERT_NO_FATAL_FAILURE(
+      signature_propagation::callableReturningValue_calledWithoutArguments_works(makeFunkyVoidReturningFn));
+}
+
+TEST(MakeFunkyVoidReturning, callableReturningValue_calledWithMultipleArguments_works) {
+  ASSERT_NO_FATAL_FAILURE(
+      signature_propagation::callableReturningValue_calledWithMultipleArguments_works(makeFunkyVoidReturningFn));
+}
+
+TEST(MakeFunkyVoidReturning, callableReturningVoid_calledWithoutArguments_works) {
+  auto lambda = []() {};
+  auto decorated_lambda = makeFunkyVoidReturning(lambda);
+
+  FunkyVoid result = decorated_lambda();
+  std::ignore = result;
+}
+
+TEST(MakeFunkyVoidReturning, callableReturningVoid_calledWithMultipleArguments_works) {
   auto lambda = [](int, std::string) {};
   auto decorated_lambda = makeFunkyVoidReturning(lambda);
 
   FunkyVoid result = decorated_lambda(1, "two");
+  std::ignore = result;
 }
