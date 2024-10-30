@@ -1,7 +1,5 @@
-
 #include <gtest/gtest.h>
 
-#include <sstream>
 #include <string>
 
 #include "funkypipes/make_auto_pipe.hpp"
