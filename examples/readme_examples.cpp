@@ -2,85 +2,89 @@
 #include <gtest/gtest.h>
 
 #include <sstream>
+#include <string>
 
 #include "funkypipes/make_auto_pipe.hpp"
+#include "funkypipes/make_pipe.hpp"
 
 using namespace funkypipes;
-using namespace std::string_literals;
 
-TEST(ReadmeExamples, readme_example_basic) {
-  auto boolToInt = [](bool flag) -> int { return static_cast<int>(flag); };
-  auto toString = [](auto arg) -> std::string { return std::to_string(arg); };
-  auto twoTimes = [](const std::string& string) -> std::string { return string + string; };
-
-  auto pipe = makeAutoPipe(boolToInt, toString, twoTimes);
-
-  std::string result = pipe(true);
-
-  ASSERT_EQ(result, "11");
-}
-
-TEST(ReadmeExamples, readme_example_multiple_parameter) {
-  auto generateSomeData = [](int arg1, int arg2, int arg3) -> std::tuple<int, std::string> {
-    return {arg1 + arg2 + arg3, "4"};
+TEST(ReadmeExamples, readme_make_pipe_basic) {
+  auto classifyTemperature = [](int temperature) -> std::tuple<bool, std::string> {
+    bool is_alert = (temperature > 42);
+    std::string temperatureInfo = "Temperature=" + std::to_string(temperature);
+    return {is_alert, temperatureInfo};
   };
-  auto mergeToString = [](int value, std::string string) { return std::to_string(value) + string; };
 
-  auto pipe = makeAutoPipe(generateSomeData, mergeToString);
+  auto swapArgs = [](auto arg1, auto arg2) { return std::make_tuple(arg2, arg1); };
 
-  std::string result = pipe(1, 2, 3);
-
-  ASSERT_EQ(result, "64");
-}
-
-TEST(ReadmeExamples, readme_example_chain_breaking) {
-  auto breakWhenZero = [](int value) -> std::optional<int> {
-    return (value == 0) ? std::nullopt : std::make_optional(value);
+  auto generateLogEntry = [](const std::string& message, bool is_alert) {
+    return (is_alert ? "ALERT: " : "Info: ") + message;
   };
-  auto forward = [](int value) -> int { return value; };
 
-  auto pipe = makeAutoPipe(breakWhenZero, forward, forward);
+  auto generateTemperatureLogEnty = makePipe(classifyTemperature, swapArgs, generateLogEntry);
 
-  std::optional<int> res1 = pipe(0);  // breaking case
-  EXPECT_FALSE(res1.has_value());
-
-  std::optional<int> res2 = pipe(7);  // forwarding case
-  EXPECT_EQ(res2, 7);
+  ASSERT_EQ(generateTemperatureLogEnty(30), "Info: Temperature=30");
+  ASSERT_EQ(generateTemperatureLogEnty(50), "ALERT: Temperature=50");
 }
 
-TEST(ReadmeExamples, readme_example_generic) {
-  auto forward = [](auto... args) { return std::make_tuple(args...); };
-  auto sum = [](auto... args) { return (args + ...); };
+TEST(ReadmeExamples, readme_make_pipe_reference) {
+  auto forwardReference = [](bool& value) -> bool& { return value; };
 
-  auto pipe = makeAutoPipe(forward, sum);
+  auto pipe = makePipe(forwardReference, forwardReference);
 
-  ASSERT_EQ(pipe(0), 0);
-  ASSERT_EQ(pipe(1, 2, 3), 6);
-  ASSERT_EQ(pipe("1"s, "2"s, "3"s), "123"s);
+  bool argument{true};
+  bool& result = pipe(argument);
+  ASSERT_EQ(result, true);
+
+  result = false;
+  ASSERT_EQ(argument, false);
 }
 
-TEST(ReadmeExamples, readme_example_reference) {
-  auto lambda = [](int& value) -> int& { return value; };
-
-  auto pipe = makeAutoPipe(lambda, lambda);
-
-  int argument{1};
-  int& result = pipe(argument);
-  ASSERT_EQ(result, 1);
-
-  result++;
-  ASSERT_EQ(argument, 2);
-}
-
-TEST(ReadmeExamples, readme_example_nested) {
+TEST(ReadmeExamples, readme_make_pipe_nested) {
   auto increment = [](int value) {
     ++value;
     return value;
   };
 
-  auto pipe1 = makeAutoPipe(increment, increment, increment);
-  auto pipe2 = makeAutoPipe(pipe1, pipe1, increment);
-  auto pipe3 = makeAutoPipe(pipe2, pipe2);
+  auto pipe1 = makePipe(increment, increment);
+  auto pipe2 = makePipe(pipe1, increment);
+  auto pipe3 = makePipe(pipe2, pipe2);
 
-  ASSERT_EQ(pipe3(0), 14);
+  ASSERT_EQ(pipe3(0), 6);
+}
+
+TEST(ReadmeExamples, readme_make_pipe_chain_breaking) {
+  auto breakWhenZero = [](int value) -> std::optional<int> {
+    return (value == 0) ? std::nullopt : std::make_optional(value);
+  };
+
+  auto forward = [](int value) { return value; };
+
+  auto toString = [](int value) { return std::to_string(value); };
+
+  auto pipe = makePipe(breakWhenZero, andThen(forward), andThen(toString));
+
+  std::optional<std::string> res1 = pipe(0);  // breaking case
+  EXPECT_FALSE(res1.has_value());
+
+  std::optional<std::string> res2 = pipe(1);  // forwarding case
+  EXPECT_EQ(res2, "1");
+}
+
+TEST(ReadmeExamples, readme_make_auto_pipe_chain_breaking) {
+  auto breakWhenZero = [](int value) -> std::optional<int> {
+    return (value == 0) ? std::nullopt : std::make_optional(value);
+  };
+  auto forward = [](int value) -> int { return value; };
+
+  auto toString = [](int value) { return std::to_string(value); };
+
+  auto pipe = makeAutoPipe(breakWhenZero, forward, toString);
+
+  std::optional<std::string> res1 = pipe(0);  // breaking case
+  EXPECT_FALSE(res1.has_value());
+
+  std::optional<std::string> res2 = pipe(2);  // forwarding case
+  EXPECT_EQ(res2, "2");
 }
