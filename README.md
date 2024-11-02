@@ -1,7 +1,11 @@
 ![image](https://github.com/mahush/funkypipes/blob/main/docs/funkypipes_banner.png)
 
-Your C++17-compatible higher-order function toolbox for building heterogeneous data transformation pipelines by composing functions in a tacit programming style.
+**Your C++17-compatible higher-order function toolbox for building heterogeneous data transformation pipelines by composing functions in a tacit programming style.**
 
+- **Higher-order function toolbox**: This library provides a collection of functions (here called tools) that take other functions as arguments and return functions as result. These tools can be combined in various ways.
+- **Heterogeneous data transformation pipelines**: The library enables building pipelines that transform multiple arguments of different types into results of different types based on user-provided callables that themselves transform multiple input types into multiple output types.
+- **Callables**: Refers to functions, function objects, lambdas also overloaded and generic ones.
+- **Composing in a tacit style**: Callables are composed into pipelines using the tools provided by the library without explicitly specifying the arguments. This style of programming is also known as point-free style, where the focus is on the composition of functions rather than the data they operate on.
 ---
 ## General Features
 
