@@ -125,6 +125,10 @@ EXPECT_FALSE(res1.has_value());
 std::optional<std::string> res2 = pipe(2);  // forwarding case
 EXPECT_EQ(res2, "2");
 ```
+
+### **more to come**
+See the [Roadmap](https://github.com/mahush/funkypipes/blob/main/docs/roadmap.md)
+
 ---
 ## Project Directory Structure
 
