@@ -2,6 +2,7 @@
 
 #include <string>
 
+#include "funkypipes/bind_front.hpp"
 #include "funkypipes/make_auto_pipe.hpp"
 #include "funkypipes/make_pipe.hpp"
 
@@ -85,4 +86,13 @@ TEST(ReadmeExamples, readme_make_auto_pipe_chain_breaking) {
 
   std::optional<std::string> res2 = pipe(2);  // forwarding case
   EXPECT_EQ(res2, "2");
+}
+
+TEST(ReadmeExamples, readme_bind_front) {
+  auto greet = [](std::string salutation, std::string name) { return salutation + " " + name + "!"; };
+
+  auto greetWithHello = bindFront(greet, "Hello");
+
+  const auto result = greetWithHello("John");
+  ASSERT_EQ(result, "Hello John!");
 }
