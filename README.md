@@ -126,6 +126,22 @@ std::optional<std::string> res2 = pipe(2);  // forwarding case
 EXPECT_EQ(res2, "2");
 ```
 
+### **bindFront**
+Decorates the given function by pre-binding specified arguments from left to right, resulting in a new function that requires only the remaining arguments.
+
+  - **Type Signature**: `(a1 -> a2 -> ... -> an -> b) -> (a1 -> a2 -> ... -> ak) -> (ak+1 -> ... -> an -> b)`
+  - **See Also**: `bind_front`(c++20), `partial`(ramda or lodash)
+
+Example:
+```cpp
+auto greet = [](std::string salutation, std::string name) { return salutation + " " + name + "!"; };
+
+auto greetWithHello = bindFront(greet, "Hello");
+
+const auto result = greetWithHello("John");
+ASSERT_EQ(result, "Hello John!");
+```
+
 ### **more to come**
 See the [Roadmap](https://github.com/mahush/funkypipes/blob/main/docs/roadmap.md)
 

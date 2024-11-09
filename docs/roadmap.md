@@ -4,18 +4,6 @@
 The following higher-order functions are planned to be implemented in order to extend the range of tools provided by this library.
 
 
-1. **bindLeft**
-    - **Type Signature**: `(a1 -> a2 -> ... -> an -> b) -> (a1 -> a2 -> ... -> ak) -> (ak+1 -> ... -> an -> b)`
-    - **Description**: Creates a new function by pre-filling the first argument of a function.
-    - **See Also**: `bind_left`(c++20),`partial`(ramda or lodash)
-    - **Usage Example**:
-      ```cpp
-      auto add = [](int x, int y) { return x + y; };
-
-      auto addFive = bindLeft(add, 5);
-      addFive(3);  // returns 8
-      ```
-
 1. **cond**
    - **Type Signature**: `[(a -> Bool, a -> b)] -> (a -> b)`
    - **Description**: Evaluates a list of predicate-function pairs and applies the function corresponding to the first predicate that returns true.
