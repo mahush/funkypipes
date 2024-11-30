@@ -25,9 +25,13 @@ set_target_properties(gtest gtest_main PROPERTIES
 # Setup for testing
 enable_testing()
 add_executable(test_funkypipes examples/readme_examples.cpp
+                               tests/details/tuple/test_drop_tuple_element.cpp
+                               tests/details/tuple/test_index_sequence.cpp
+                               tests/details/tuple/test_separate_element_from_tuple.cpp
+                               tests/details/tuple/test_try_flatten_tuple.cpp
                                tests/test_and_then.cpp
                                tests/test_bind_front.cpp
-                               tests/test_index_sequence.cpp
+                               tests/test_consume_at.cpp
                                tests/test_make_arg_optional.cpp
                                tests/test_make_auto_pipe.cpp
                                tests/test_make_funky_void_removing.cpp
@@ -39,7 +43,6 @@ add_executable(test_funkypipes examples/readme_examples.cpp
                                tests/test_make_skippable.cpp
                                tests/test_make_tuple_packing.cpp
                                tests/test_make_tuple_unpacking.cpp
-                               tests/test_remove_tuple_element.cpp
                                tests/test_traits.cpp)
 target_link_libraries(test_funkypipes PRIVATE gtest_main)
 target_include_directories(test_funkypipes PRIVATE

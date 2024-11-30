@@ -6,7 +6,7 @@
 // Official repository: https://github/mahush/funkypipes
 //
 
-#include "funkypipes/details/index_sequence.hpp"
+#include "funkypipes/details/tuple/index_sequence.hpp"
 
 using namespace funkypipes::details;
 

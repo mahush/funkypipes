@@ -6,8 +6,8 @@
 // Official repository: https://github/mahush/funkypipes
 //
 
-#ifndef FUNKYPIPES_DETAILS_INDEX_SEQUENCE_HPP
-#define FUNKYPIPES_DETAILS_INDEX_SEQUENCE_HPP
+#ifndef FUNKYPIPES_DETAILS_TUPLE_INDEX_SEQUENCE_HPP
+#define FUNKYPIPES_DETAILS_TUPLE_INDEX_SEQUENCE_HPP
 
 #include <tuple>
 #include <utility>
@@ -32,4 +32,4 @@ using IndexSequenceSpan = decltype(shiftIndexSequence<StartIdx>(std::make_index_
 
 }  // namespace funkypipes::details
 
-#endif  // FUNKYPIPES_DETAILS_INDEX_SEQUENCE_HPP
+#endif  // FUNKYPIPES_DETAILS_TUPLE_INDEX_SEQUENCE_HPP

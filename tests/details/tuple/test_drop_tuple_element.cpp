@@ -11,16 +11,16 @@
 #include <tuple>
 #include <utility>
 
-#include "funkypipes/details/remove_tuple_element.hpp"
+#include "funkypipes/details/tuple/drop_tuple_element.hpp"
 
 using namespace funkypipes::details;
 
-TEST(RemoveTupleElement, threeElementTuple_removingFirstElement_lastTwoElementsLeft) {
+TEST(DropTupleElement, threeElementTuple_removingFirstElement_lastTwoElementsLeft) {
   // given
   auto original = std::make_tuple(1, "two", '3');
 
   // when
-  auto modified = removeTupleElement<0>(original);
+  auto modified = dropTupleElement<0>(original);
 
   // then
   EXPECT_EQ(std::tuple_size<decltype(modified)>(), std::tuple_size<decltype(original)>::value - 1);
@@ -28,12 +28,12 @@ TEST(RemoveTupleElement, threeElementTuple_removingFirstElement_lastTwoElementsL
   EXPECT_EQ(std::get<1>(modified), std::get<2>(original));
 }
 
-TEST(RemoveTupleElement, threeElementTuple_removingIntermediateElement_firstAndLastElementLeft) {
+TEST(DropTupleElement, threeElementTuple_removingIntermediateElement_firstAndLastElementLeft) {
   // given
   auto original = std::make_tuple(1, "two", '3');
 
   // when
-  auto modified = removeTupleElement<1>(original);
+  auto modified = dropTupleElement<1>(original);
 
   // then
   EXPECT_EQ(std::tuple_size<decltype(modified)>(), std::tuple_size<decltype(original)>::value - 1);
@@ -41,12 +41,12 @@ TEST(RemoveTupleElement, threeElementTuple_removingIntermediateElement_firstAndL
   EXPECT_EQ(std::get<1>(modified), std::get<2>(original));
 }
 
-TEST(RemoveTupleElement, threeElementTuple_removingLastElement_firstTwoElementsLeft) {
+TEST(DropTupleElement, threeElementTuple_removingLastElement_firstTwoElementsLeft) {
   // given
   auto original = std::make_tuple(1, "two", '3');
 
   // when
-  auto modified = removeTupleElement<2>(original);
+  auto modified = dropTupleElement<2>(original);
 
   // then
   EXPECT_EQ(std::tuple_size<decltype(modified)>(), std::tuple_size<decltype(original)>::value - 1);
@@ -54,18 +54,18 @@ TEST(RemoveTupleElement, threeElementTuple_removingLastElement_firstTwoElementsL
   EXPECT_EQ(std::get<1>(modified), std::get<1>(original));
 }
 
-TEST(RemoveTupleElement, ConstLValueTuple_RemoveCalled_works) {
+TEST(DropTupleElement, constLValueTuple_removeCalled_works) {
   // given
   const auto original = std::make_tuple(0, 1);
 
   // when
-  auto modified = removeTupleElement<0>(original);
+  auto modified = dropTupleElement<0>(original);
 
   // then
   EXPECT_EQ(std::get<0>(std::move(modified)), 1);
 }
 
-TEST(RemoveTupleElement, TupleWithRValueElements_OneElementRemoved_OtherElementAccessableAsRValue) {
+TEST(DropTupleElement, tupleWithRValueElements_oneElementRemoved_otherElementAccessableAsRValue) {
   // given
   struct NonCopyableStruct {
     explicit NonCopyableStruct(int value) : m_value(value) {}
@@ -80,14 +80,14 @@ TEST(RemoveTupleElement, TupleWithRValueElements_OneElementRemoved_OtherElementA
   auto original = std::make_tuple(NonCopyableStruct{0}, NonCopyableStruct{1});
 
   // when
-  auto modified = removeTupleElement<0>(std::move(original));
+  auto modified = dropTupleElement<0>(std::move(original));
 
   // then
   auto element = std::get<0>(std::move(modified));
   EXPECT_EQ(element.m_value, 1);
 }
 
-// TEST(RemoveTupleElement, TwoElementTuple_RemovingThirdElement_TriggersStaticAssert) {
+// TEST(DropTupleElement, twoElementTuple_removingThirdElement_triggersStaticAssert) {
 //   auto original = std::make_tuple(1, "two");
 //
 //   auto modified = removeTupleElement<2>(original);
