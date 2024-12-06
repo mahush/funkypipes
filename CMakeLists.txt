@@ -14,13 +14,17 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 include(FetchContent)
 FetchContent_Declare(
   googletest
-  URL https://github.com/google/googletest/archive/release-1.10.0.zip
+  URL https://github.com/google/googletest/archive/refs/tags/v1.15.2.zip
 )
 FetchContent_MakeAvailable(googletest)
 
-set_target_properties(gtest gtest_main PROPERTIES
-  COMPILE_OPTIONS "-w"
-)
+# Suppress warnings for gtest and gmock
+if(TARGET gtest)
+  target_compile_options(gtest PRIVATE -w)
+endif()
+if(TARGET gmock)
+  target_compile_options(gmock PRIVATE -w)
+endif()
 
 # Setup for testing
 enable_testing()
