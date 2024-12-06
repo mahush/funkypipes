@@ -1,26 +1,29 @@
-cmake_minimum_required(VERSION 3.10)
+cmake_minimum_required(VERSION 3.12)
 
 # Enable generation of compile_commands.json
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 project(funkypipes LANGUAGES CXX)
 
-# Set the C++ standard for the project
-set(CMAKE_CXX_STANDARD 17)
-set(CMAKE_CXX_STANDARD_REQUIRED ON)
-set(CMAKE_CXX_EXTENSIONS OFF)
+message(STATUS "C++ Compiler: ${CMAKE_CXX_COMPILER}")
+message(STATUS "C++ Compiler Version: ${CMAKE_CXX_COMPILER_VERSION}")
+message(STATUS "C++ Standard: C++${CMAKE_CXX_STANDARD}")
 
 # Fetch Google Test
 include(FetchContent)
 FetchContent_Declare(
   googletest
-  URL https://github.com/google/googletest/archive/release-1.10.0.zip
+  URL https://github.com/google/googletest/archive/refs/tags/v1.15.2.zip
 )
 FetchContent_MakeAvailable(googletest)
 
-set_target_properties(gtest gtest_main PROPERTIES
-  COMPILE_OPTIONS "-w"
-)
+# Suppress warnings for gtest and gmock
+if(TARGET gtest)
+  target_compile_options(gtest PRIVATE -w)
+endif()
+if(TARGET gmock)
+  target_compile_options(gmock PRIVATE -w)
+endif()
 
 # Setup for testing
 enable_testing()

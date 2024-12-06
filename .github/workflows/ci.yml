@@ -1,23 +1,63 @@
-
 name: C++ CI
 
 on: [push, pull_request]
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
+    strategy:
+      matrix:
+        config:
+          - { name: g++, version: "9", standard: "17" }
+          - { name: g++, version: "10", standard: "17" }
+          - { name: g++, version: "11", standard: "17" }
+          - { name: g++, version: "12", standard: "17" }
+          - { name: g++, version: "13", standard: "17" }
+          - { name: g++, version: "14", standard: "17" }
+          - { name: g++, version: "14", standard: "23" }
+          - { name: clang++, version: "12", standard: "17" }
+          - { name: clang++, version: "13", standard: "17" }
+          - { name: clang++, version: "14", standard: "17" }
+          - { name: clang++, version: "15", standard: "17" }
+          - { name: clang++, version: "16", standard: "17" }
+          - { name: clang++, version: "17", standard: "17" }
+          - { name: clang++, version: "18", standard: "17" }
+          - { name: clang++, version: "19", standard: "17" }
+          - { name: clang++, version: "19", standard: "23" }
+
+    container:
+      image: ${{ matrix.config.name == 'g++' && 'gcc:' || 'teeks99/clang-ubuntu:' }}${{ matrix.config.version }}
 
     steps:
     - uses: actions/checkout@v4
 
-    - name: Install dependencies
-      run: sudo apt-get update && sudo apt-get install -y cmake g++ make
+    - name: Install zip
+      run: apt-get update && apt-get install -y zip
+
+    - name: Setup CMake
+      uses: lukka/get-cmake@latest
+      with:
+        cmakeVersion: 3.31.2
+
+    - name: Validate Tools in Container
+      run: |
+        cmake --version
+        "${{ matrix.config.name }}" --version
+
+    - name: Set Compiler Paths
+      id: compilers
+      run: |
+        CXX_COMPILER=$(which "${{ matrix.config.name }}")
+        echo "CXX_COMPILER=$CXX_COMPILER" >> $GITHUB_ENV
 
     - name: Configure CMake
-      run: cmake -S . -B build
+      run: |
+        cmake -S . -B build \
+          -DCMAKE_CXX_COMPILER=$CXX_COMPILER \
+          -DCMAKE_CXX_STANDARD=${{ matrix.config.standard }}
 
     - name: Build
       run: cmake --build build
 
     - name: Test
-      run: cmake --build build --target test_funkypipes && ./build/test_funkypipes
+      run: ./build/test_funkypipes
