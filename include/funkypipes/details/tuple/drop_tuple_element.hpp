@@ -9,6 +9,7 @@
 #ifndef FUNKYPIPES_DETAILS_TUPLE_DROP_TUPLE_ELEMENT_HPP
 #define FUNKYPIPES_DETAILS_TUPLE_DROP_TUPLE_ELEMENT_HPP
 
+#include <cstddef>
 #include <tuple>
 #include <utility>
 
@@ -26,19 +27,22 @@ auto recreateTupleFromIndices(TTuple&& tuple, std::index_sequence<Idxs...>) {
 
 // Helper function to determine the index sequences for elements before and after the element to remove and then invokes
 // the tuple re-creation function.
-template <std::size_t IdxToRemove, typename TTuple>
+template <std::size_t... IdxsToRemove, typename TTuple>
 auto dropTupleElement(TTuple&& tuple) {
   constexpr std::size_t tupleSize = std::tuple_size<std::decay_t<TTuple>>::value;
 
-  static_assert(IdxToRemove < tupleSize, "Index out of range");
+  //  static_assert(IdxsToRemove < tupleSize, "Index out of range");
 
-  constexpr auto elementCountBefore = IdxToRemove;
-  constexpr auto idxsBefore = IndexSequenceSpan<0, elementCountBefore>{};
+  //  constexpr auto elementCountBefore = IdxsToRemove;
+  //  constexpr auto idxsBefore = IndexSequenceSpan<0, elementCountBefore>{};
+  //
+  //  constexpr auto elementCountAfter = tupleSize - IdxsToRemove - 1;
+  //  constexpr auto idxsAfter = IndexSequenceSpan<IdxsToRemove + 1, elementCountAfter>{};
 
-  constexpr auto elementCountAfter = tupleSize - IdxToRemove - 1;
-  constexpr auto idxsAfter = IndexSequenceSpan<IdxToRemove + 1, elementCountAfter>{};
+  // return recreateTupleFromIndices(std::forward<TTuple>(tuple), indexSequenceCat(idxsBefore, idxsAfter));
 
-  return recreateTupleFromIndices(std::forward<TTuple>(tuple), indexSequenceCat(idxsBefore, idxsAfter));
+  constexpr auto indicesToKeep = ComplementIndices<tupleSize, IdxsToRemove...>{};
+  return recreateTupleFromIndices(std::forward<TTuple>(tuple), indicesToKeep);
 }
 
 }  // namespace impl
