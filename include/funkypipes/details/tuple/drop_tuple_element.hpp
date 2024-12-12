@@ -41,7 +41,7 @@ auto dropTupleElement(TTuple&& tuple) {
 
   // return recreateTupleFromIndices(std::forward<TTuple>(tuple), indexSequenceCat(idxsBefore, idxsAfter));
 
-  constexpr auto indicesToKeep = ComplementIndices<tupleSize, IdxsToRemove...>{};
+  constexpr auto indicesToKeep = ComplementIndexSequence<tupleSize, IdxsToRemove...>{};
   return recreateTupleFromIndices(std::forward<TTuple>(tuple), indicesToKeep);
 }
 
