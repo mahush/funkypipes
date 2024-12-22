@@ -39,6 +39,7 @@ add_executable(test_funkypipes examples/readme_examples.cpp
                                tests/test_make_signature_checking.cpp
                                tests/test_make_skippable.cpp
                                tests/test_make_tuple_packing.cpp
+                               tests/test_make_tuple_returning.cpp
                                tests/test_make_tuple_unpacking.cpp
                                tests/test_traits.cpp)
 target_link_libraries(test_funkypipes PRIVATE gtest_main)
