@@ -27,6 +27,7 @@ enable_testing()
 add_executable(test_funkypipes examples/readme_examples.cpp
                                tests/details/tuple/test_index_sequence.cpp
                                tests/details/tuple/test_separate_tuple_elements.cpp
+                               tests/details/tuple/test_try_flatten_tuple.cpp
                                tests/details/tuple/test_tuple_traits.cpp
                                tests/test_and_then.cpp
                                tests/test_bind_front.cpp
