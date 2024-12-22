@@ -27,6 +27,7 @@ enable_testing()
 add_executable(test_funkypipes examples/readme_examples.cpp
                                tests/details/tuple/test_index_sequence.cpp
                                tests/details/tuple/test_separate_tuple_elements.cpp
+                               tests/details/tuple/test_tuple_traits.cpp
                                tests/test_and_then.cpp
                                tests/test_bind_front.cpp
                                tests/test_make_arg_optional.cpp
@@ -39,6 +40,7 @@ add_executable(test_funkypipes examples/readme_examples.cpp
                                tests/test_make_signature_checking.cpp
                                tests/test_make_skippable.cpp
                                tests/test_make_tuple_packing.cpp
+                               tests/test_make_tuple_returning.cpp
                                tests/test_make_tuple_unpacking.cpp
                                tests/test_traits.cpp)
 target_link_libraries(test_funkypipes PRIVATE gtest_main)
