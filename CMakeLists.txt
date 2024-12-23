@@ -43,7 +43,8 @@ add_executable(test_funkypipes examples/readme_examples.cpp
                                tests/test_make_tuple_packing.cpp
                                tests/test_make_tuple_returning.cpp
                                tests/test_make_tuple_unpacking.cpp
-                               tests/test_traits.cpp)
+                               tests/test_traits.cpp
+                               tests/test_when_type.cpp)
 target_link_libraries(test_funkypipes PRIVATE gtest_main)
 target_include_directories(test_funkypipes PRIVATE
     ${PROJECT_SOURCE_DIR}/include
