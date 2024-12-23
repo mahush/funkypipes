@@ -12,6 +12,25 @@
 #include <utility>
 
 namespace funkypipes::details {
+
+//
+// shiftIndexSequence
+//
+
+// A function that adds an offset to each value in an index_sequence, effectively shifting the sequence.
+template <std::size_t Offset, std::size_t... Idxs>
+constexpr auto shiftIndexSequence(std::index_sequence<Idxs...>) {
+  return std::index_sequence<(Idxs + Offset)...>{};
+}
+
+//
+// IndexSequenceSpan
+//
+
+// A template that represents a std::index_sequence containing the index values of the specified span.
+template <std::size_t StartIdx, std::size_t Count>
+using IndexSequenceSpan = decltype(shiftIndexSequence<StartIdx>(std::make_index_sequence<Count>{}));
+
 //
 // indexSequenceCat
 //
