@@ -33,6 +33,7 @@ add_executable(test_funkypipes examples/readme_examples.cpp
                                tests/details/tuple/test_tuple_traits.cpp
                                tests/test_and_then.cpp
                                tests/test_bind_front.cpp
+                               tests/test_at.cpp
                                tests/test_make_arg_optional.cpp
                                tests/test_make_auto_pipe.cpp
                                tests/test_make_funky_void_removing.cpp
