@@ -14,6 +14,9 @@
 
 #include <functional>
 #include <string>
+#include <tuple>
+#include <type_traits>
+#include <utility>
 
 namespace funkypipes::test::execution_semantics {
 
@@ -199,6 +202,48 @@ void callablesForwardingRefererence_composed_referencesArePreserved(TFn makePipe
   ASSERT_EQ(argument, 2);
 }
 
+template <typename TFn>
+void callablesForwardingMultipleConstRefererences_composed_constReferencesArePreserved(TFn makePipeFn) {
+  // given
+  auto forwardingFn = [](const int& arg1, const std::string& arg2) { return std::forward_as_tuple(arg1, arg2); };
+  auto pipe = makePipeFn(forwardingFn, forwardingFn);
+
+  // when
+  int arg1 = 1;
+  std::string arg2 = "two";
+  decltype(auto) result = pipe(std::as_const(arg1), std::as_const(arg2));
+
+  // then
+  static_assert(std::is_same_v<decltype(result), std::tuple<const int&, const std::string&>>);
+  ASSERT_EQ(std::get<0>(result), 1);
+  ASSERT_EQ(std::get<1>(result), "two");
+  arg1 = 2;
+  arg2 = "three";
+  ASSERT_EQ(std::get<0>(result), 2);
+  ASSERT_EQ(std::get<1>(result), "three");
+}
+
+template <typename TFn>
+void callablesForwardingMultipleRefererences_composed_referencesArePreserved(TFn makePipeFn) {
+  // given
+  auto forwardingFn = [](int& arg1, std::string& arg2) { return std::forward_as_tuple(arg1, arg2); };
+  auto pipe = makePipeFn(forwardingFn, forwardingFn);
+
+  // when
+  int arg1 = 1;
+  std::string arg2 = "two";
+  decltype(auto) result = pipe(arg1, arg2);
+
+  // then
+  static_assert(std::is_same_v<decltype(result), std::tuple<int&, std::string&>>);
+  ASSERT_EQ(std::get<0>(result), 1);
+  ASSERT_EQ(std::get<1>(result), "two");
+  std::get<0>(result) = 2;
+  std::get<1>(result) = "three";
+  ASSERT_EQ(arg1, 2);
+  ASSERT_EQ(arg2, "three");
+}
+
 // feature: data - move only
 template <typename TFn>
 void callablesWithNonCopyableArguments_composed_works(TFn makePipeFn) {
@@ -305,6 +350,6 @@ void callablesReturningVoid_composedAsPipe_pipeReturnsVoid(TFn makePipeFn) {
   static_assert(std::is_void_v<ResultType>);
 }
 
-}  // namespace funkypipes::test
+}  // namespace funkypipes::test::execution_semantics
 
 #endif  // FUNKYPIPES_TESTS_PREDEFINED_EXECUTION_SEMANTICS_MAKE_PIPE_TESTS_HPP

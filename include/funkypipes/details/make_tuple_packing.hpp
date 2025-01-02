@@ -25,8 +25,8 @@ auto makeTuplePacking(TFn&& fn) {
       // Note: single arguments are forwarded directly
       return fn_(std::forward<decltype(args)>(args)...);
     } else {
-      // Note: zero or multiple arguments are forwarded via tuple
-      return fn_(std::make_tuple(std::forward<decltype(args)>(args)...));
+      // Note: zero or multiple arguments are forwarded via tuple, while preserving references
+      return fn_(std::forward_as_tuple(std::forward<decltype(args)>(args)...));
     }
   };
 }
