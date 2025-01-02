@@ -28,24 +28,30 @@ static int incrementFn(int value) {
 // feature: composing variable amount of callables
 template <typename TFn>
 void singleCallable_composed_works(TFn makePipeFn) {
+  // when
   auto pipe = makePipeFn(incrementFn);
 
+  // then
   auto result = pipe(0);
   ASSERT_EQ(result, 1);
 }
 
 template <typename TFn>
 void twoCallables_composed_works(TFn makePipeFn) {
+  // when
   auto pipe = makePipeFn(incrementFn, incrementFn);
 
+  // then
   auto result = pipe(0);
   ASSERT_EQ(result, 2);
 }
 
 template <typename TFn>
 void threeCallables_composed_works(TFn makePipeFn) {
+  // when
   auto pipe = makePipeFn(incrementFn, incrementFn, incrementFn);
 
+  // then
   auto result = pipe(0);
   ASSERT_EQ(result, 3);
 }
@@ -54,6 +60,9 @@ void threeCallables_composed_works(TFn makePipeFn) {
 static int function(int value) { return value; };
 template <typename TFn>
 void differentCallableTypes_composed_works(TFn makePipeFn) {
+  //
+  // given
+  //
   auto lambda = [](int value) { return value; };
 
   struct Functor {
@@ -61,8 +70,10 @@ void differentCallableTypes_composed_works(TFn makePipeFn) {
   };
   Functor functor;
 
+  // when
   auto pipe = makePipeFn(lambda, functor, function);
 
+  // then
   auto result = pipe(0);
   ASSERT_EQ(result, 0);
 }
@@ -70,25 +81,24 @@ void differentCallableTypes_composed_works(TFn makePipeFn) {
 // feature: callables - generic callables
 template <typename TFn>
 void genericLambdaPipe_calledWithDifferentTypes_typeSpecificChainExecuted(TFn makePipeFn) {
+  // given
   auto generic_lambda = [](auto arg) { return arg; };
-
   auto pipe = makePipeFn(generic_lambda, generic_lambda);
 
-  {
-    bool flag = true;
-    auto result = pipe(flag);
-    ASSERT_EQ(result, true);
-  }
+  // when
+  auto result1 = pipe(true);
+  auto result2 = pipe("string");
 
-  {
-    std::string string = "string";
-    auto result = pipe(string);
-    ASSERT_EQ(result, "string");
-  }
+  // then
+  ASSERT_EQ(result1, true);
+  ASSERT_EQ(result2, "string");
 }
 
 template <typename TFn>
 void overloadedFunctorsPipe_calledWithEachType_typeSpecificChainExecuted(TFn makePipeFn) {
+  //
+  // given
+  //
   struct OverloadFn1 {
     int operator()(int arg) const { return arg; }
     std::string operator()(std::string arg) const { return arg; }
@@ -100,13 +110,19 @@ void overloadedFunctorsPipe_calledWithEachType_typeSpecificChainExecuted(TFn mak
 
   auto pipe = makePipeFn(OverloadFn1{}, OverloadFn2{});
 
-  EXPECT_EQ(0, pipe(0));
-  EXPECT_EQ("0", pipe(std::string{"0"}));
+  // when
+  auto result1 = pipe(0);
+  auto result2 = pipe(std::string{"0"});
+
+  // then
+  EXPECT_EQ(result1, 0);
+  EXPECT_EQ(result2, "0");
 }
 
 // feature: callables - move only
 template <typename TFn>
 void nonCopyableCallables_composed_works(TFn makePipeFn) {
+  // given
   struct NonCopyableFn {
     NonCopyableFn() = default;
     ~NonCopyableFn() = default;
@@ -118,19 +134,25 @@ void nonCopyableCallables_composed_works(TFn makePipeFn) {
     int operator()(int value) const { return value; }
   };
 
+  // when
   auto pipe = makePipeFn(NonCopyableFn{}, NonCopyableFn{}, NonCopyableFn{});
+
+  // then
   EXPECT_EQ(0, pipe(0));
 }
 
 // feature: callables - assignable to std::function
 template <typename TFn>
 void genericPipe_assignedToStdFunctions_works(TFn makePipeFn) {
+  // given
   auto generic_lambda = [](auto arg) { return arg; };
-
   auto pipe = makePipeFn(generic_lambda, generic_lambda);
+
+  // when
   std::function<int(int)> function_a = pipe;
   std::function<std::string(std::string)> function_b = pipe;
 
+  // then
   ASSERT_EQ(1, function_a(1));
   ASSERT_EQ("1", function_b("1"));
 }
@@ -138,39 +160,52 @@ void genericPipe_assignedToStdFunctions_works(TFn makePipeFn) {
 // feature: callables - propagate exceptions
 template <typename TFn>
 void pipeComposed_callableThrows_exceptionPropagatedToCaller(TFn makePipeFn) {
+  // given
   auto lambda_1 = [](bool) -> int { return 0; };
   auto lambda_2 = [](int) -> bool {
     throw std::exception{};
     return false;
   };
-
   auto pipe = makePipeFn(lambda_1, lambda_2);
 
+  // when and then
   EXPECT_THROW(pipe(false), std::exception);
 }
 
 // feature: data - value categories
 template <typename TFn>
 void compositionWithValueArgument_calledWithLValue_works(TFn makePipeFn) {
+  //
+  // given
+  //
   auto lambda_1 = [](int value) -> int { return value; };
   auto lambda_2 = [](int value) -> std::string { return std::to_string(value); };
 
   auto pipe = makePipeFn(lambda_1, lambda_2);
 
+  // when
   int argument{0};
   auto result = pipe(argument);
+
+  // then
   ASSERT_EQ(result, "0");
 }
 
 template <typename TFn>
 void compositionWithValueArgument_calledWithRValue_works(TFn makePipeFn) {
+  //
+  // given
+  //
   auto lambda_1 = [](int value) -> int { return value; };
   auto lambda_2 = [](int value) -> std::string { return std::to_string(value); };
 
   auto pipe = makePipeFn(lambda_1, lambda_2);
 
+  // when
   int argument{0};
   auto result = pipe(std::move(argument));
+
+  // then
   ASSERT_EQ(result, "0");
 }
 
@@ -253,6 +288,7 @@ void callablesForwardingMultipleRefererences_composed_referencesArePreserved(TFn
 // feature: data - move only
 template <typename TFn>
 void callablesWithNonCopyableArguments_composed_works(TFn makePipeFn) {
+  // given
   struct NonCopyableArg {
     explicit NonCopyableArg(int arg) : arg_{arg} {}
     ~NonCopyableArg() = default;
@@ -260,98 +296,139 @@ void callablesWithNonCopyableArguments_composed_works(TFn makePipeFn) {
     NonCopyableArg(NonCopyableArg&&) = default;
     NonCopyableArg& operator=(const NonCopyableArg&) = delete;
     NonCopyableArg& operator=(NonCopyableArg&&) = delete;
-    int arg_;
+    int arg_;  // NOLINT: misc-non-private-member-variables-in-classes: intended
   };
   auto lambda = [](NonCopyableArg arg) { return arg; };
 
+  // when
   auto pipe = makePipeFn(lambda, lambda, lambda);
-  auto res = pipe(NonCopyableArg{0});
 
+  // then
+  auto res = pipe(NonCopyableArg{0});
   EXPECT_EQ(0, res.arg_);
 }
 
 // feature: data - any number of arguments
 template <typename TFn>
 void compositionWithSingleArgument_called_isExecuted(TFn makePipeFn) {
+  //
+  // given
+  //
   auto lambda_1 = [](bool flag) -> int { return flag ? 7 : 0; };
   auto lambda_2 = [](int value) -> std::string { return std::to_string(value); };
   auto lambda_3 = [](const std::string& string) -> std::string { return string + string; };
 
   auto pipe = makePipeFn(lambda_1, lambda_2, lambda_3);
 
+  // when
   bool flag = true;
   auto result = pipe(flag);
+
+  // then
   ASSERT_EQ(result, "77");
 }
 
 template <typename TFn>
 void compositionWithMultipleArguments_called_isExecuted(TFn makePipeFn) {
+  //
+  // given
+  //
   auto lambda_1 = [](int arg1, int arg2) -> int { return arg1 + arg2; };
   auto lambda_2 = [](int value) -> std::string { return std::to_string(value); };
 
   auto pipe = makePipeFn(lambda_1, lambda_2);
 
+  // when
   auto result = pipe(1, 2);
+
+  // then
   ASSERT_EQ(result, "3");
 }
 
 template <typename TFn>
 void compositionWithTupleArgument_called_isExecuted(TFn makePipeFn) {
+  //
+  // given
+  //
   auto lambda_1 = [](int arg1, int arg2) -> int { return arg1 + arg2; };
   auto lambda_2 = [](int value) -> std::string { return std::to_string(value); };
 
   auto pipe = makePipeFn(lambda_1, lambda_2);
 
+  // when
   auto result = pipe(std::make_tuple(3, 4));
+
+  // then
   ASSERT_EQ(result, "7");
 }
 
 template <typename TFn>
 void compositionWithTuplePassthrough_called_isExecuted(TFn makePipeFn) {
+  //
+  // given
+  //
   auto lambda_1 = [](bool flag) -> std::tuple<int, std::string> { return {flag, "2"}; };
   auto lambda_2 = [](int arg1, const std::string& arg2) -> std::string { return std::to_string(arg1) + arg2; };
 
   auto pipe = makePipeFn(lambda_1, lambda_2);
 
+  // when
   bool flag = true;
   auto result = pipe(flag);
+
+  // then
   ASSERT_EQ(result, "12");
 }
 
 template <typename TFn>
 void compositionWithTupleResult_called_isExecuted(TFn makePipeFn) {
+  //
+  // given
+  //
   auto lambda_1 = [](bool flag) -> bool { return static_cast<int>(flag); };
   auto lambda_2 = [](int value) -> std::tuple<int, std::string> { return {value, std::to_string(value)}; };
 
   auto pipe = makePipeFn(lambda_1, lambda_2);
 
+  // given
   auto [result_1, result_2] = pipe(true);
 
+  // then
   ASSERT_EQ(result_1, 1);
   ASSERT_EQ(result_2, "1");
 }
 
 template <typename TFn>
 void compositionWithoutArguments_called_isExecuted(TFn makePipeFn) {
+  //
+  // given
+  //
   auto lambda_1 = []() -> int { return 0; };
   auto lambda_2 = [](int value) -> std::string { return std::to_string(value); };
 
   auto pipe = makePipeFn(lambda_1, lambda_2);
 
+  // when
   auto result = pipe();
+
+  // then
   ASSERT_EQ(result, "0");
 }
 
 // feature: data - void return type
 template <typename TFn>
 void callablesReturningVoid_composedAsPipe_pipeReturnsVoid(TFn makePipeFn) {
+  //
+  // given
+  //
   auto lambda_1 = []() -> void {};
   auto lambda_2 = []() -> void {};
 
+  // when
   auto pipe = makePipeFn(lambda_1, lambda_2);
 
+  // then
   pipe();
-
   using ResultType = std::invoke_result_t<decltype(pipe)>;
   static_assert(std::is_void_v<ResultType>);
 }
