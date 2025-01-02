@@ -26,6 +26,7 @@ set_target_properties(gtest gtest_main PROPERTIES
 enable_testing()
 add_executable(test_funkypipes examples/readme_examples.cpp
                                tests/details/tuple/test_index_sequence.cpp
+                               tests/details/tuple/test_resolve_rvalue_references.cpp
                                tests/details/tuple/test_separate_tuple_elements.cpp
                                tests/details/tuple/test_try_flatten_tuple.cpp
                                tests/details/tuple/test_tuple_traits.cpp
