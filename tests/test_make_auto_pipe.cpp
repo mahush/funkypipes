@@ -76,6 +76,15 @@ TEST(MakeAutoPipe, callablesForwardingConstRefererence_composed_constReferencesA
   ASSERT_NO_FATAL_FAILURE(callablesForwardingConstRefererence_composed_constReferencesArePreserved(makeAutoPipeFn));
 }
 
+TEST(MakeAutoPipe, callablesForwardingMultipleConstRefererences_composed_constReferencesArePreserved) {
+  ASSERT_NO_FATAL_FAILURE(
+      callablesForwardingMultipleConstRefererences_composed_constReferencesArePreserved(makeAutoPipeFn));
+}
+
+TEST(MakeAutoPipe, callablesForwardingMultipleRefererences_composed_referencesArePreserved) {
+  ASSERT_NO_FATAL_FAILURE(callablesForwardingMultipleRefererences_composed_referencesArePreserved(makeAutoPipeFn));
+}
+
 // feature: data - move only
 TEST(MakeAutoPipe, callablesWithNonCopyableArguments_composed_works) {
   ASSERT_NO_FATAL_FAILURE(callablesWithNonCopyableArguments_composed_works(makeAutoPipeFn));
