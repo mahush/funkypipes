@@ -176,28 +176,34 @@ void compositionWithValueArgument_calledWithRValue_works(TFn makePipeFn) {
 
 template <typename TFn>
 void callablesForwardingConstRefererence_composed_constReferencesArePreserved(TFn makePipeFn) {
+  // given
   auto lambda = [](const int& value) -> const int& { return value; };
-
   auto pipe = makePipeFn(lambda, lambda);
 
+  // when
   int argument{0};
-  const int& result = pipe(argument);
-  ASSERT_EQ(result, 0);
+  decltype(auto) result = pipe(argument);
 
+  // then
+  static_assert(std::is_same_v<decltype(result), const int&>);
+  ASSERT_EQ(result, 0);
   argument++;
   ASSERT_EQ(result, 1);
 }
 
 template <typename TFn>
 void callablesForwardingRefererence_composed_referencesArePreserved(TFn makePipeFn) {
+  // given
   auto lambda = [](int& value) -> int& { return value; };
-
   auto pipe = makePipeFn(lambda, lambda);
 
+  // when
   int argument{1};
-  int& result = pipe(argument);
-  ASSERT_EQ(result, 1);
+  decltype(auto) result = pipe(argument);
 
+  // then
+  static_assert(std::is_same_v<decltype(result), int&>);
+  ASSERT_EQ(result, 1);
   result++;
   ASSERT_EQ(argument, 2);
 }
