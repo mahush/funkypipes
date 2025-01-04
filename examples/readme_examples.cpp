@@ -1,12 +1,15 @@
 #include <gtest/gtest.h>
 
 #include <string>
+#include <tuple>
 
+#include "funkypipes/at.hpp"
 #include "funkypipes/bind_front.hpp"
 #include "funkypipes/make_auto_pipe.hpp"
 #include "funkypipes/make_pipe.hpp"
 
 using namespace funkypipes;
+using namespace std::string_literals;
 
 TEST(ReadmeExamples, readme_make_pipe_basic) {
   auto classifyTemperature = [](int temperature) -> std::tuple<bool, std::string> {
@@ -89,10 +92,38 @@ TEST(ReadmeExamples, readme_make_auto_pipe_chain_breaking) {
 }
 
 TEST(ReadmeExamples, readme_bind_front) {
-  auto greet = [](std::string salutation, std::string name) { return salutation + " " + name + "!"; };
+  auto greet = [](const std::string& salutation, const std::string& name) { return salutation + " " + name + "!"; };
 
   auto greetWithHello = bindFront(greet, "Hello");
 
-  const auto result = greetWithHello("John");
-  ASSERT_EQ(result, "Hello John!");
+  const auto result = greetWithHello("World");
+  ASSERT_EQ(result, "Hello World!");
+}
+
+TEST(ReadmeExamples, readme_pipe_with_at_simple) {
+  auto incrementFn = [](int value) { return value + 1; };
+
+  auto pipe = makePipe(at<1>(incrementFn), at<int>(incrementFn));
+
+  const auto result = pipe(1.0, 2);
+  ASSERT_EQ(result, std::make_tuple(1.0, 4));
+}
+
+TEST(ReadmeExamples, readme_pipe_with_at_advanced) {
+  auto provideNameAndYearOfBirth = []() { return std::make_tuple("Haskell Curry"s, 1900); };
+  auto toBirthString = [](auto year) { return "born in "s + std::to_string(year); };
+  struct Separator {
+    std::string characters_;
+  };
+  auto concat = [](const std::string& lhs, const std::string& rhs, Separator separator) {
+    return lhs + separator.characters_ + rhs;
+  };
+
+  auto providePersonInfoByType =
+      makePipe(at<>(provideNameAndYearOfBirth), at<int>(toBirthString), at<std::string, Separator>(concat));
+
+  auto providePersonInfoByIndex = makePipe(at<>(provideNameAndYearOfBirth), at<2>(toBirthString), at<1, 2, 0>(concat));
+
+  ASSERT_EQ(providePersonInfoByType(Separator{", "}), "Haskell Curry, born in 1900"s);
+  ASSERT_EQ(providePersonInfoByIndex(Separator{" | "}), "Haskell Curry | born in 1900"s);
 }

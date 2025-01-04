@@ -13,7 +13,7 @@
 - **Callable Types**: functions, lambdas, and functors are supported
 - **Generic and Overloaded Callables**: Generic lambdas, generic functors and overloaded functors are supported as callables to be composed. This means a pipe might take different input argument types that might even result in different output types. Thus, the pipe's signature is as flexible as the signatures of its chained callables itself.
 - **Error Handling**: The implementation is exception-safe. Exceptions thrown by any callable of in the pipe are propagated to the pipe's caller.
-- **Callable Signatures**: Callables having multiple parameters and tuple return values are supported. Furthermore `const` and non-`const` references for parameters and return values are supported.
+- **Callable Signatures**: Callables having multiple parameters and tuple return values are supported. In general `const` and non-`const` lvalue references and rvalue references for arguments and return values are supported.
 - **Move Semantics and Perfect Forwarding**: The implementation fully supports move semantics for callables and their arguments where semantically meaningful.
 ---
 ## Tools and their specific features
@@ -134,12 +134,73 @@ Decorates the given function by pre-binding specified arguments from left to rig
 
 Example:
 ```cpp
-auto greet = [](std::string salutation, std::string name) { return salutation + " " + name + "!"; };
+auto greet = [](const std::string& salutation, const std::string& name) { return salutation + " " + name + "!"; };
 
 auto greetWithHello = bindFront(greet, "Hello");
 
-const auto result = greetWithHello("John");
-ASSERT_EQ(result, "Hello John!");
+const auto result = greetWithHello("World");
+ASSERT_EQ(result, "Hello World!");
+```
+
+### **at**
+
+A decorator for transforming only selected arguments. It takes a function and a list of indices/types, returning a new function that applies the original function to the specified arguments while leaving others unchanged. This allows selective transformation of arguments within a pipe.
+
+  - **Input**: Out of any number of variadic arguments, only the ones at the specified indices/types are passed to the function.
+  - **Output**: The concatenation of the untouched arguments and the results of the function applied to the selected arguments is returned as tuple. In case the tuple would only contain a single element, the element itself is returned.
+
+  - **Type Signature**: `((a1, a2, ..., an) -> (b1, b2, ..., bn)) -> [Int] -> ((c1, c2, ..., cn) -> (c1, c2, ..., b1, b2, ...))`
+
+      <details>
+      <summary> Type signature details </summary>
+
+      - **`(a1, a2, ..., an -> b1, b2, ..., bn)`**:
+        - Represents the function to be applied.
+        - `a1, a2, ..., an` are the types of the inputs to this function.
+        - `b1, b2, ..., bn` are the types of the results from this function, emphasizing that it can take multiple inputs and produce multiple outputs.
+      
+      - **`[Int]`**:
+        - A list of indices specifying which arguments from the tuple `(c1, c2, ..., cn)` should be transformed by the function.
+        - These indices correspond to the positions in the tuple where the function `a -> b` is applied.
+      
+      - **`(c1, c2, ..., cn)`**:
+        - The tuple of arguments provided to the resulting function.
+        - `ci` represents each argument type, with some of these being transformed based on the indices.
+      
+      - **`(c1, c2, ..., b1, b2, ...)`**:
+        - The output tuple of the resulting function.
+        - Elements at the specified indices are transformed to `b1, b2, ..., bn` by applying the function, while other elements (`ci`) remain unchanged.
+
+      </details>
+
+Simple Example:
+```cpp
+auto incrementFn = [](int value) { return value + 1; };
+
+auto pipe = makePipe(at<1>(incrementFn), at<int>(incrementFn));
+
+const auto result = pipe(1.0, 2);
+ASSERT_EQ(result, std::make_tuple(1.0, 4));
+```
+
+Advanced Example:
+```cpp
+auto provideNameAndYearOfBirth = []() { return std::make_tuple("Haskell Curry"s, 1900); };
+auto toBirthString = [](auto year) { return "born in "s + std::to_string(year); };
+struct Separator {
+  std::string characters_;
+};
+auto concat = [](const std::string& lhs, const std::string& rhs, Separator separator) {
+  return lhs + separator.characters_ + rhs;
+};
+
+auto providePersonInfoByType =
+    makePipe(at<>(provideNameAndYearOfBirth), at<int>(toBirthString), at<std::string, Separator>(concat));
+
+auto providePersonInfoByIndex = makePipe(at<>(provideNameAndYearOfBirth), at<2>(toBirthString), at<1, 2, 0>(concat));
+
+ASSERT_EQ(providePersonInfoByType(Separator{", "}), "Haskell Curry, born in 1900"s);
+ASSERT_EQ(providePersonInfoByIndex(Separator{" | "}), "Haskell Curry | born in 1900"s);
 ```
 
 ### **more to come**
