@@ -206,30 +206,6 @@ The following higher-order functions are planned to be implemented in order to e
       tap(logValue, 5);  // returns 5 and prints: "Value: 5"
       ```
 
-1. **transformAt** (index)
-    - **Type Signature**: `(a -> b) -> Int -> (a, c, d) -> (b, c, d)`
-    - **Description**: Applies a function to the nth element in a tuple.
-    - **Usage Example**:
-      ```cpp
-      std::tuple<int, double, std::string> mixedTuple = std::make_tuple(1, 2.5, "3");
-
-      auto transformFunction = [](int x) { return x * 10; };
-
-      transformAt(mixedTuple, 0, transformFunction);  // returns std::tuple<int, double, std::string>{10, 2.5, "3"}
-      ```
-
-1. **transformAt** (type)
-    - **Type Signature**: `(a -> b) -> (c, a, d) -> (c, b, d)`
-    - **Description**: Selects elements of a specific type, applies a transformation, and then merges back into the original tuple structure.
-    - **Usage Example**:
-      ```cpp
-      std::tuple<int, double, std::string> mixedTuple = std::make_tuple(1, 2.5, "3");
-
-      auto transformFunction = [](int x) { return x * 10; };
-
-      transformAt<int>(mixedTuple, transformFunction);  // returns std::tuple<int, double, std::string>{10, 2.5, "3"}
-      ```
-
 1. **transformByType**
     - **Type Signature**: `[(a -> b), (c -> d), ...] -> (a, c, ...) -> (b, d, ...)`
     - **Description**: Applies different functions to elements based on their type, and returns a tuple of the results.
