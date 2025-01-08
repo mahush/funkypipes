@@ -92,6 +92,7 @@ void overloadedFunctorCallable_calledWithValue_isExecuted(TFn makeSkippableFn) {
 template <typename TFn>
 void nonCopyableCallable_calledWithValue_isExecuted(TFn makeSkippableFn) {
   struct NonCopyableFn {
+    NonCopyableFn() = default;
     ~NonCopyableFn() = default;
     NonCopyableFn(const NonCopyableFn&) = delete;
     NonCopyableFn(NonCopyableFn&&) = default;
@@ -185,6 +186,7 @@ void callableProvidingReference_called_returnsOptionalReference(TFn makeSkippabl
 template <typename TFn>
 void callableHavingValueArgument_calledWithNonCopyableRValueOptional_works(TFn makeSkippableFn) {
   struct NonCopyableArg {
+    NonCopyableArg() = default;
     ~NonCopyableArg() = default;
     NonCopyableArg(const NonCopyableArg&) = delete;
     NonCopyableArg(NonCopyableArg&&) = default;
