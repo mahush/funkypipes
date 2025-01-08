@@ -20,6 +20,7 @@ namespace funkypipes::test::signature_propagation {
 template <typename TFn>
 void nonCopyableCallable_called_works(TFn decorating_fn) {
   struct NonCopyableFn {
+    NonCopyableFn() = default;
     ~NonCopyableFn() = default;
     NonCopyableFn(const NonCopyableFn&) = delete;
     NonCopyableFn(NonCopyableFn&&) = default;
@@ -93,6 +94,7 @@ void callableForwardingReference_calledWithReference_returnsReference(TFn decora
 template <typename TFn>
 void callable_calledWithNonCopyableValue_works(TFn decorating_fn) {
   struct NonCopyableArg {
+    NonCopyableArg() = default;
     ~NonCopyableArg() = default;
     NonCopyableArg(const NonCopyableArg&) = delete;
     NonCopyableArg(NonCopyableArg&&) = default;

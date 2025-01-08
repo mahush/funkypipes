@@ -119,6 +119,7 @@ TEST(MakeTupleReturning, callableReturningTuple_called_returnsTuple) {
 TEST(MakeTupleReturning, nonCopyableCallable_called_works) {
   // given
   struct NonCopyableFn {
+    NonCopyableFn() = default;
     ~NonCopyableFn() = default;
     NonCopyableFn(const NonCopyableFn&) = delete;
     NonCopyableFn(NonCopyableFn&&) = default;
@@ -141,6 +142,7 @@ TEST(MakeTupleReturning, nonCopyableCallable_called_works) {
 TEST(MakeTupleReturning, callable_calledWithNonCopyableValue_NonCopyValueReturned) {
   // given
   struct NonCopyableArg {
+    explicit NonCopyableArg(int value) : value_{value} {};
     ~NonCopyableArg() = default;
     NonCopyableArg(const NonCopyableArg&) = delete;
     NonCopyableArg(NonCopyableArg&&) = default;

@@ -377,6 +377,7 @@ TEST(
     argument1AssignedToCallableForwardingItsNonCopyableArgument_calledWithTwoArgumentsWhereArgument1IsNonCopyable_bothArgumentsReturned) {
   // given
   struct NonCopyableArg {
+    explicit NonCopyableArg(int value) : value_{value} {};
     ~NonCopyableArg() = default;
     NonCopyableArg(const NonCopyableArg&) = delete;
     NonCopyableArg(NonCopyableArg&&) = default;
@@ -402,6 +403,7 @@ TEST(
     argument0AssignedToCallableForwardingItsArgument_calledWithTwoArgumentsWhereArgument1IsNonCopyable_bothArgumentsReturned) {
   // given
   struct NonCopyableArg {
+    explicit NonCopyableArg(int value) : value_{value} {};
     ~NonCopyableArg() = default;
     NonCopyableArg(const NonCopyableArg&) = delete;
     NonCopyableArg(NonCopyableArg&&) = default;

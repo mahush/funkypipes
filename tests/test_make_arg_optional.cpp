@@ -35,6 +35,7 @@ TEST(MakeArgOptional, callable_having_optional_argument__called_with_rvalue_opti
 
 TEST(MakeArgOptional, callable_having_optional_argument__called_with_non_copyable_rvalue_optional__works) {
   struct NonCopyableArg {
+    NonCopyableArg() = default;
     ~NonCopyableArg() = default;
     NonCopyableArg(const NonCopyableArg&) = delete;
     NonCopyableArg(NonCopyableArg&&) = default;
@@ -72,6 +73,7 @@ TEST(MakeArgOptional, callable_having_optional_argument__called_with_rvalue_valu
 
 TEST(MakeArgOptional, callable_having_optional_argument__called_with_non_copyable_rvalue_value__works) {
   struct NonCopyableArg {
+    NonCopyableArg() = default;
     ~NonCopyableArg() = default;
     NonCopyableArg(const NonCopyableArg&) = delete;
     NonCopyableArg(NonCopyableArg&&) = default;

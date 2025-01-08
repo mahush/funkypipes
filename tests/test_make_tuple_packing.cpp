@@ -106,6 +106,7 @@ TEST(MakeTuplePacking, callableAcceptingTupleOfInt_calledWithRValueInt_reference
   // given
   //
   struct NonCopyableOrMovableArg {
+    explicit NonCopyableOrMovableArg(int value) : value_{value} {};
     ~NonCopyableOrMovableArg() = default;
     NonCopyableOrMovableArg(const NonCopyableOrMovableArg&) = delete;
     NonCopyableOrMovableArg(NonCopyableOrMovableArg&&) = delete;
