@@ -11,6 +11,7 @@
 
 #include <cstddef>
 #include <tuple>
+#include <type_traits>
 #include <utility>
 
 #include "funkypipes/details/make_signature_checking.hpp"
@@ -27,21 +28,30 @@ namespace impl {
 
 // Helper function that forwards the arguments of the selected indices to the given function. Its result is the
 // concatenation of the remaining arguments and the function's result.
-template <typename TFn, typename TTuple, size_t... SelectedIdxs>
-auto atImpl(TFn& tupleReturningFn, TTuple argsTuple, std::index_sequence<SelectedIdxs...>) -> decltype(auto) {
+template <typename TFn, typename TProvideSelectedIdxsFn>
+auto atImpl(TFn&& fn, TProvideSelectedIdxsFn provideSelectedIdxsFn) {
+  using ::funkypipes::details::makeSignatureChecking;
+  using ::funkypipes::details::makeTupleReturning;
   using ::funkypipes::details::resolveRValueReferences;
   using ::funkypipes::details::separateTupleElements;
   using ::funkypipes::details::tryFlattenTuple;
 
-  auto [selectedArgsTuple, otherArgsTuple] = separateTupleElements<SelectedIdxs...>(std::move(argsTuple));
+  return [tupleReturningFn_ = makeTupleReturning(makeSignatureChecking(std::forward<TFn>(fn))),
+          provideSelectedIdxsFn_ = std::move(provideSelectedIdxsFn)](auto&&... args) mutable -> decltype(auto) {
+    auto argsTuple{std::forward_as_tuple(std::forward<decltype(args)>(args)...)};
 
-  auto fnResultTuple = std::apply(tupleReturningFn, std::move(selectedArgsTuple));
+    auto selectedIdxs = provideSelectedIdxsFn_(argsTuple);
 
-  auto otherArgsTupleWithoutRValueRefs = resolveRValueReferences(std::move(otherArgsTuple));
+    auto [selectedArgsTuple, otherArgsTuple] = separateTupleElements(std::move(argsTuple), std::move(selectedIdxs));
 
-  auto overallResultTuple = std::tuple_cat(std::move(otherArgsTupleWithoutRValueRefs), std::move(fnResultTuple));
+    auto fnResultTuple = std::apply(tupleReturningFn_, std::move(selectedArgsTuple));
 
-  return tryFlattenTuple(std::move(overallResultTuple));
+    auto otherArgsTupleWithoutRValueRefs = resolveRValueReferences(std::move(otherArgsTuple));
+
+    auto overallResultTuple = std::tuple_cat(std::move(otherArgsTupleWithoutRValueRefs), std::move(fnResultTuple));
+
+    return tryFlattenTuple(std::move(overallResultTuple));
+  };
 }
 
 }  // namespace impl
@@ -50,15 +60,11 @@ auto atImpl(TFn& tupleReturningFn, TTuple argsTuple, std::index_sequence<Selecte
 // concatenation of the remaining arguments and the function's result.
 template <std::size_t... SelectedIdxs, typename TFn>
 auto at(TFn&& fn) {
-  using ::funkypipes::details::makeSignatureChecking;
-  using ::funkypipes::details::makeTupleReturning;
   using ::funkypipes::impl::atImpl;
 
-  return [tupleReturningFn_ = makeTupleReturning(makeSignatureChecking(std::forward<TFn>(fn)))](
-             auto&&... args) mutable -> decltype(auto) {
-    auto argsTuple{std::forward_as_tuple(std::forward<decltype(args)>(args)...)};
-    return atImpl(tupleReturningFn_, std::move(argsTuple), std::index_sequence<SelectedIdxs...>{});
-  };
+  auto provideSelectedIdxsFn = [](const auto& /*argsTuple*/) { return std::index_sequence<SelectedIdxs...>{}; };
+
+  return atImpl(std::forward<TFn>(fn), std::move(provideSelectedIdxsFn));
 }
 
 // Function decorator that forwards the arguments of the selected types to the given function. Its result is the
@@ -66,21 +72,17 @@ auto at(TFn&& fn) {
 template <typename TFirstSelected, typename... TOtherSelected, typename TFn>
 auto at(TFn&& fn) {
   using ::funkypipes::details::indexSequenceCat;
-  using ::funkypipes::details::makeSignatureChecking;
-  using ::funkypipes::details::makeTupleReturning;
   using ::funkypipes::details::TupleIndicesOfAssertingSuccess;
   using ::funkypipes::impl::atImpl;
 
-  return [tupleReturningFn_ = makeTupleReturning(makeSignatureChecking(std::forward<TFn>(fn)))](
-             auto&&... args) mutable -> decltype(auto) {
-    auto argsTuple{std::forward_as_tuple(std::forward<decltype(args)>(args)...)};
-    using ArgsTuple = decltype(argsTuple);
+  auto provideSelectedIdxsFn = [](const auto& argsTuple) {
+    using ArgsTuple = std::decay_t<decltype(argsTuple)>;
 
-    auto selectedIndices = indexSequenceCat(TupleIndicesOfAssertingSuccess<TFirstSelected, ArgsTuple>{},
-                                            TupleIndicesOfAssertingSuccess<TOtherSelected, ArgsTuple>{}...);
-
-    return atImpl(tupleReturningFn_, std::move(argsTuple), std::move(selectedIndices));
+    return indexSequenceCat(TupleIndicesOfAssertingSuccess<TFirstSelected, ArgsTuple>{},
+                            TupleIndicesOfAssertingSuccess<TOtherSelected, ArgsTuple>{}...);
   };
+
+  return atImpl(std::forward<TFn>(fn), std::move(provideSelectedIdxsFn));
 }
 
 }  // namespace funkypipes
