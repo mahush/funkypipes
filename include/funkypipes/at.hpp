@@ -25,15 +25,6 @@ namespace funkypipes {
 
 namespace impl {
 
-// Helper trait that ectends TupleIndicesOf by asserting that the requested element was found at least once.
-template <typename TRequested, typename TTuple>
-struct TupleIndicesOfAssertingSuccessImpl {
-  using type = ::funkypipes::details::TupleIndicesOf<TRequested, TTuple>;
-  static_assert(type::size() >= 1, "At least one of the selected types is not available");
-};
-template <typename TRequested, typename TTuple>
-using TupleIndicesOfAssertingSuccess = typename TupleIndicesOfAssertingSuccessImpl<TRequested, TTuple>::type;
-
 // Helper function that forwards the arguments of the selected indices to the given function. Its result is the
 // concatenation of the remaining arguments and the function's result.
 template <typename TFn, typename TTuple, size_t... SelectedIdxs>
@@ -77,8 +68,8 @@ auto at(TFn&& fn) {
   using ::funkypipes::details::indexSequenceCat;
   using ::funkypipes::details::makeSignatureChecking;
   using ::funkypipes::details::makeTupleReturning;
+  using ::funkypipes::details::TupleIndicesOfAssertingSuccess;
   using ::funkypipes::impl::atImpl;
-  using ::funkypipes::impl::TupleIndicesOfAssertingSuccess;
 
   return [tupleReturningFn_ = makeTupleReturning(makeSignatureChecking(std::forward<TFn>(fn)))](
              auto&&... args) mutable -> decltype(auto) {
