@@ -55,10 +55,14 @@ auto separateTupleElements(const std::tuple<TElements...>& tuple) {
   return impl::separateTupleElements<IdxsToSeparate...>(tuple);
 }
 
-// This function takes an rvalue tuple as input and returns the separated element, along with a new tuple containing the
-// remaining elements.
+// These functions takes an rvalue tuple as input and returns the separated element, along with a new tuple containing
+// the remaining elements.
 template <std::size_t... IdxsToSeparate, typename... TElements>
 auto separateTupleElements(std::tuple<TElements...>&& tuple) {
+  return impl::separateTupleElements<IdxsToSeparate...>(std::move(tuple));
+}
+template <std::size_t... IdxsToSeparate, typename... TElements>
+auto separateTupleElements(std::tuple<TElements...>&& tuple, const std::index_sequence<IdxsToSeparate...>&) {
   return impl::separateTupleElements<IdxsToSeparate...>(std::move(tuple));
 }
 
