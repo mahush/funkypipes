@@ -9,6 +9,17 @@ message(STATUS "C++ Compiler: ${CMAKE_CXX_COMPILER}")
 message(STATUS "C++ Compiler Version: ${CMAKE_CXX_COMPILER_VERSION}")
 message(STATUS "C++ Standard: C++${CMAKE_CXX_STANDARD}")
 
+# Add the header-only library as an INTERFACE target
+add_library(funkypipes INTERFACE)
+target_include_directories(funkypipes INTERFACE
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+    $<INSTALL_INTERFACE:include>
+)
+target_compile_features(funkypipes INTERFACE cxx_std_17)
+
+# Create an alias target for easier linking
+add_library(funkypipes::funkypipes ALIAS funkypipes)
+
 # Fetch Google Test
 include(FetchContent)
 FetchContent_Declare(
