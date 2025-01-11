@@ -14,18 +14,11 @@
 #include <utility>
 
 #include "funkypipes/details/tuple/index_sequence.hpp"
+#include "funkypipes/details/tuple/recreate_tuple_from_indices.hpp"
 
 namespace funkypipes::details {
 
 namespace impl {
-
-// Helper function that creates a new tuple based on the given one, using the specified indices. Only the
-// elements at Idxs are accessed, all other elements are not touched. The original element types are preserved.
-template <typename TTuple, std::size_t... Idxs>
-auto recreateTupleFromIndices(TTuple&& tuple, std::index_sequence<Idxs...>) {
-  using ResultTuple = std::tuple<std::tuple_element_t<Idxs, std::decay_t<TTuple>>...>;
-  return ResultTuple{std::get<Idxs>(std::forward<TTuple>(tuple))...};
-}
 
 // Implementation of separating the specified elements of a given tuple into two tuples, one that contains the separated
 // elements and another containing the remaining ones.
