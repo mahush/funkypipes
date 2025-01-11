@@ -227,6 +227,47 @@ auto callable2 = MAKE_CALLABLE(foo.bar);
 ASSERT_EQ(callable2(3), 3);
 ```
 
+### **passAlong**
+
+A decorator function that duplicates the specified input arguments and passes the duplicates along. The decorated function processes all input arguments as usual. Finally the decorator function returns both the duplicated arguments and the output of the decorated function.
+
+  - **Input**: All input arguments are forwarded to the decorated function.
+  - **Passing along**: The arguments specified as template parameter are duplicated and passed along.
+  - **Output**: The concatenation of the duplicated input arguments and the result of the decorated function, in that exact order.
+
+By Index Example:
+```cpp
+auto plusFn = [](int lhs, int rhs) { return lhs + rhs; };
+auto multiplyFn = [](int lhs, int rhs) { return lhs * rhs; };
+
+auto pipe = makePipe(passAlong<1>(plusFn), multiplyFn);
+
+ASSERT_EQ(pipe(1, 2), 6);
+```
+
+By Type Example:
+```cpp
+enum class Locale { en_US, de_DE };
+auto appendDateFn = [](std::string buffer, Locale config) {
+  buffer += (config == Locale::en_US) ? "9/15/1959"s : "15.09.1959"s;
+  return buffer;
+};
+auto appendSpaceFn = [](std::string buffer, Locale) {
+  buffer += " ";
+  return buffer;
+};
+
+auto appendTimeFn = [](std::string buffer, Locale config) {
+  buffer += (config == Locale::en_US) ? "12:01 AM"s : "00:01"s;
+  return buffer;
+};
+
+auto appendDateTime = makePipe(passAlong<Locale>(appendDateFn), passAlong<Locale>(appendSpaceFn), appendTimeFn);
+
+ASSERT_EQ(appendDateTime("en_US: "s, Locale::en_US), "en_US: 9/15/1959 12:01 AM"s);
+ASSERT_EQ(appendDateTime("de_DE: "s, Locale::de_DE), "de_DE: 15.09.1959 00:01"s);
+
+```
 
 ### **more to come**
 See the [Roadmap](https://github.com/mahush/funkypipes/blob/main/docs/roadmap.md)
