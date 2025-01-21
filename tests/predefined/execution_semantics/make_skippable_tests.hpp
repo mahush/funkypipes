@@ -124,6 +124,18 @@ void callableHavingValueArgument_calledWithLValueOptional_works(TFn makeSkippabl
 }
 
 template <typename TFn>
+void callableHavingValueArgument_calledWithConstLValueOptional_works(TFn makeSkippableFn) {
+  auto lambda = [](int value) { return std::to_string(value); };
+
+  auto skippable_lambda = makeSkippableFn(lambda);
+
+  const std::optional<int> argument{1};
+  std::optional<std::string> res = skippable_lambda(argument);
+  EXPECT_TRUE(res.has_value());
+  EXPECT_EQ(res.value(), "1");
+}
+
+template <typename TFn>
 void callableHavingValueArgument_calledWithRValueOptional_works(TFn makeSkippableFn) {
   auto lambda = [](int value) { return std::to_string(value); };
 

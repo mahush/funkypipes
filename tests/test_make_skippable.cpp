@@ -41,6 +41,11 @@ TEST(MakeSkippable, callableHavingValueArgument_calledWithLValueOptional_works) 
       execution_semantics::callableHavingValueArgument_calledWithLValueOptional_works(makeSkippableFn));
 }
 
+TEST(MakeSkippable, callableHavingValueArgument_calledWithConstLValueOptional_works) {
+  ASSERT_NO_FATAL_FAILURE(
+      execution_semantics::callableHavingValueArgument_calledWithConstLValueOptional_works(makeSkippableFn));
+}
+
 TEST(MakeSkippable, callableHavingValueArgument_calledWithRValueOptional_works) {
   ASSERT_NO_FATAL_FAILURE(
       execution_semantics::callableHavingValueArgument_calledWithRValueOptional_works(makeSkippableFn));
