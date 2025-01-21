@@ -203,6 +203,31 @@ ASSERT_EQ(providePersonInfoByType(Separator{", "}), "Haskell Curry, born in 1900
 ASSERT_EQ(providePersonInfoByIndex(Separator{" | "}), "Haskell Curry | born in 1900"s);
 ```
 
+### **makeCallable**
+
+A macro that wraps the specified invocable expression into a lambda function. The resulting lambda can be invoked with
+any number of arguments, which are then perfectly forwarded to the original invocable expression. The lambda returns
+the result of this invocation.
+
+This is especially useful for wrapping an overloaded function into a generic callable object, allowing it to be used as a pipeline element. Additionally, wrapping member function calls with this approach enhances readability compared to using `std::bind` or `std::bind_front`.
+
+Example:
+```cpp
+// wrapping overloaded method
+auto callable1 = MAKE_CALLABLE(std::to_string);
+ASSERT_EQ(callable1(0), "0");
+ASSERT_EQ(callable1(1.0), "1.000000");
+
+// wrapping member function call
+struct Foo {
+  int bar(int arg) const { return arg; }
+};
+Foo foo;
+auto callable2 = MAKE_CALLABLE(foo.bar);
+ASSERT_EQ(callable2(3), 3);
+```
+
+
 ### **more to come**
 See the [Roadmap](https://github.com/mahush/funkypipes/blob/main/docs/roadmap.md)
 
