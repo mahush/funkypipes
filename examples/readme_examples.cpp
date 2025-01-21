@@ -6,6 +6,7 @@
 #include "funkypipes/at.hpp"
 #include "funkypipes/bind_front.hpp"
 #include "funkypipes/make_auto_pipe.hpp"
+#include "funkypipes/make_callable.hpp"
 #include "funkypipes/make_pipe.hpp"
 
 using namespace funkypipes;
@@ -126,4 +127,19 @@ TEST(ReadmeExamples, readme_pipe_with_at_advanced) {
 
   ASSERT_EQ(providePersonInfoByType(Separator{", "}), "Haskell Curry, born in 1900"s);
   ASSERT_EQ(providePersonInfoByIndex(Separator{" | "}), "Haskell Curry | born in 1900"s);
+}
+
+TEST(ReadmeExamples, readme_make_callable) {
+  // wrapping overloaded method
+  auto callable1 = MAKE_CALLABLE(std::to_string);
+  ASSERT_EQ(callable1(0), "0");
+  ASSERT_EQ(callable1(1.0), "1.000000");
+
+  // wrapping member function call
+  struct Foo {
+    int bar(int arg) const { return arg; }
+  };
+  Foo foo;
+  auto callable2 = MAKE_CALLABLE(foo.bar);
+  ASSERT_EQ(callable2(3), 3);
 }

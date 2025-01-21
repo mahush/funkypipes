@@ -39,6 +39,7 @@ add_executable(test_funkypipes examples/readme_examples.cpp
                                tests/test_at.cpp
                                tests/test_make_arg_optional.cpp
                                tests/test_make_auto_pipe.cpp
+                               tests/test_make_callable.cpp
                                tests/test_make_funky_void_removing.cpp
                                tests/test_make_funky_void_returning.cpp
                                tests/test_make_pipe.cpp
