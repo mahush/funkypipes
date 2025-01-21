@@ -44,6 +44,11 @@ class SkippableFn {
     return callOrSkipFn<TValue>(optional_arg);
   }
 
+  template <typename TValue>
+  inline auto operator()(const std::optional<TValue>& optional_arg) {
+    return callOrSkipFn<TValue>(optional_arg);
+  }
+
  protected:
   template <typename TArg>
   inline decltype(auto) callFn(TArg&& arg) {
