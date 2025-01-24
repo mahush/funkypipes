@@ -136,9 +136,9 @@ TEST(MakePipe, breakablePipeReturningVoid_breaks_pipeReturnsOptionalVoid) {
 }
 
 // feature: std::optional support
-static int function_1(bool flag) { return flag ? 7 : 0; };
-static std::string function_2(int value) { return std::to_string(value); };
-static std::string function_3(std::string string) { return string + string; };
+static int function_1(bool flag) { return flag ? 7 : 0; }
+static std::string function_2(int value) { return std::to_string(value); }
+static std::string function_3(std::string string) { return string + string; }
 
 TEST(MakePipe, pipeAcceptingOptional_calledWithLValueOptional_isExecuted) {
   auto pipe = makePipe(andThen(function_1), andThen(function_2), andThen(function_3));

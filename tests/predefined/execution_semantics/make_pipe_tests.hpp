@@ -23,7 +23,7 @@ namespace funkypipes::test::execution_semantics {
 static int incrementFn(int value) {
   value++;
   return value;
-};
+}
 
 // feature: composing variable amount of callables
 template <typename TFn>
@@ -57,7 +57,7 @@ void threeCallables_composed_works(TFn makePipeFn) {
 }
 
 // feature: callables - types
-static int function(int value) { return value; };
+static int function(int value) { return value; }
 template <typename TFn>
 void differentCallableTypes_composed_works(TFn makePipeFn) {
   //

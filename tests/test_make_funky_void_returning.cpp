@@ -8,6 +8,8 @@
 
 #include <gtest/gtest.h>
 
+#include <type_traits>
+
 #include "funkypipes/details/make_funky_void_returning.hpp"
 #include "funkypipes/funky_void.hpp"
 #include "predefined/signature_propagation/standard_tests.hpp"
@@ -30,7 +32,7 @@ TEST(MakeFunkyVoidReturning, callableReturningVoid_calledWithLValue_works) {
   auto decorated_lambda = makeFunkyVoidReturning(lambda);
 
   int argument{0};
-  FunkyVoid result = decorated_lambda(argument);
+  decorated_lambda(argument);
 }
 
 TEST(MakeFunkyVoidReturning, callableForwardingItsValueArgument_calledWithLValue_works) {
@@ -43,7 +45,9 @@ TEST(MakeFunkyVoidReturning, callableReturningVoid_calledWithRValue_returnsFunky
   auto decorated_lambda = makeFunkyVoidReturning(lambda);
 
   int argument{0};
-  FunkyVoid result = decorated_lambda(std::move(argument));
+  auto result = decorated_lambda(std::move(argument));
+
+  static_assert(std::is_same_v<decltype(result), FunkyVoid>);
 }
 
 TEST(MakeFunkyVoidReturning, callableForwardingItsValueArgument_calledWithRValue_returnsArguments) {
