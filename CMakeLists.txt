@@ -54,6 +54,7 @@ target_link_libraries(test_funkypipes PRIVATE gtest_main)
 target_include_directories(test_funkypipes PRIVATE
     ${PROJECT_SOURCE_DIR}/include
 )
+target_compile_options(test_funkypipes PRIVATE -Wall -Wextra -Wpedantic)
 
 include(GoogleTest)
 gtest_discover_tests(test_funkypipes)
