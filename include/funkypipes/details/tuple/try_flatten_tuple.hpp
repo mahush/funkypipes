@@ -34,7 +34,7 @@ constexpr decltype(auto) tryFlattenTuple(TTuple&& tuple) {
     // Note: Always return tuples by value
     return std::decay_t<TTuple>{std::forward<TTuple>(tuple)};
   }
-};
+}
 
 }  // namespace funkypipes::details
 
