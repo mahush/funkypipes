@@ -167,3 +167,15 @@ TEST(TryFlattenTuple, rvalueTupleWithSingleElement_tryFlattened_elementReturnedB
   EXPECT_EQ(outputElement.value_, 0);
 }
 
+// Ensure that a tuple with a single move only value element leads to returning the element by value
+TEST(TryFlattenTuple, rvalueTupleWithMoveOnlyElement_tryFlattened_moveOnlyElementReturned) {
+  // given
+  auto original = std::make_tuple(MoveConstructableOnlyStruct{0});
+
+  // when
+  decltype(auto) outputElement = tryFlattenTuple(std::move(original));
+
+  // then
+  static_assert(std::is_same_v<decltype(outputElement), MoveOnlyStruct>);
+  EXPECT_EQ(outputElement.value_, 0);
+}

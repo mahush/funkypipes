@@ -28,7 +28,7 @@ constexpr decltype(auto) tryFlattenTuple(TTuple&& tuple) {
     if constexpr (std::is_reference_v<ElementType>) {
       return std::get<0>(std::forward<TTuple>(tuple));
     } else {
-      return ElementType{std::get<0>(tuple)};
+      return ElementType{std::get<0>(std::forward<TTuple>(tuple))};  // Note: return non references elements by value
     }
   } else {
     // Note: Always return tuples by value
