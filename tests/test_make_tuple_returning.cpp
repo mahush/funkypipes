@@ -13,6 +13,7 @@
 #include <utility>
 
 #include "funkypipes/details/make_tuple_returning.hpp"
+#include "utils/move_only_struct.hpp"
 
 using funkypipes::details::makeTupleReturning;
 
@@ -141,22 +142,12 @@ TEST(MakeTupleReturning, nonCopyableCallable_called_works) {
 // Ensure that a non copyable argument can get passed through
 TEST(MakeTupleReturning, callable_calledWithNonCopyableValue_NonCopyValueReturned) {
   // given
-  struct NonCopyableArg {
-    explicit NonCopyableArg(int value) : value_{value} {};
-    ~NonCopyableArg() = default;
-    NonCopyableArg(const NonCopyableArg&) = delete;
-    NonCopyableArg(NonCopyableArg&&) = default;
-    NonCopyableArg& operator=(const NonCopyableArg&) = delete;
-    NonCopyableArg& operator=(NonCopyableArg&&) = delete;
-
-    int value_;  // NOLINT misc-non-private-member-variables-in-classes: inteded
-  };
-  auto lambda = [](NonCopyableArg arg) { return arg; };
+  auto lambda = [](MoveOnlyStruct arg) { return arg; };
   auto tupleReturningFn = makeTupleReturning(lambda);
 
   // when
-  NonCopyableArg argument{1};
-  std::tuple<NonCopyableArg> result = tupleReturningFn(std::move(argument));
+  MoveOnlyStruct argument{1};
+  std::tuple<MoveOnlyStruct> result = tupleReturningFn(std::move(argument));
 
   // then
   ASSERT_EQ(std::get<0>(result).value_, 1);

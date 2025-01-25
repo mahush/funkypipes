@@ -55,6 +55,7 @@ add_executable(test_funkypipes examples/readme_examples.cpp
 target_link_libraries(test_funkypipes PRIVATE gtest_main)
 target_include_directories(test_funkypipes PRIVATE
     ${PROJECT_SOURCE_DIR}/include
+    ${PROJECT_SOURCE_DIR}/tests
 )
 target_compile_options(test_funkypipes PRIVATE -Wall -Wextra -Wpedantic)
 
