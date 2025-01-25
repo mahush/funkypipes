@@ -14,6 +14,8 @@
 #include <string>
 #include <type_traits>
 
+#include "utils/move_only_struct.hpp"
+
 namespace funkypipes::test::signature_propagation {
 
 // feature: callables - move only
@@ -93,22 +95,13 @@ void callableForwardingReference_calledWithReference_returnsReference(TFn decora
 // feature: data - move only
 template <typename TFn>
 void callable_calledWithNonCopyableValue_works(TFn decorating_fn) {
-  struct NonCopyableArg {
-    NonCopyableArg() = default;
-    ~NonCopyableArg() = default;
-    NonCopyableArg(const NonCopyableArg&) = delete;
-    NonCopyableArg(NonCopyableArg&&) = default;
-    NonCopyableArg& operator=(const NonCopyableArg&) = delete;
-    NonCopyableArg& operator=(NonCopyableArg&&) = delete;
-  };
-
-  auto lambda = [](NonCopyableArg arg) { return arg; };
-
+  auto lambda = [](MoveOnlyStruct arg) { return arg; };
   auto decorated_fn = decorating_fn(lambda);
 
-  NonCopyableArg argument{};
-  NonCopyableArg result = decorated_fn(std::move(argument));
-  std::ignore = result;
+  MoveOnlyStruct argument{0};
+  MoveOnlyStruct result = decorated_fn(std::move(argument));
+
+  EXPECT_EQ(result.value_, 0);
 }
 
 // feature: data - any number of arguments

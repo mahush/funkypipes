@@ -18,6 +18,8 @@
 #include <type_traits>
 #include <utility>
 
+#include "utils/move_only_struct.hpp"
+
 namespace funkypipes::test::execution_semantics {
 
 static int incrementFn(int value) {
@@ -289,23 +291,14 @@ void callablesForwardingMultipleRefererences_composed_referencesArePreserved(TFn
 template <typename TFn>
 void callablesWithNonCopyableArguments_composed_works(TFn makePipeFn) {
   // given
-  struct NonCopyableArg {
-    explicit NonCopyableArg(int arg) : arg_{arg} {}
-    ~NonCopyableArg() = default;
-    NonCopyableArg(const NonCopyableArg&) = delete;
-    NonCopyableArg(NonCopyableArg&&) = default;
-    NonCopyableArg& operator=(const NonCopyableArg&) = delete;
-    NonCopyableArg& operator=(NonCopyableArg&&) = delete;
-    int arg_;  // NOLINT: misc-non-private-member-variables-in-classes: intended
-  };
-  auto lambda = [](NonCopyableArg arg) { return arg; };
+  auto lambda = [](MoveOnlyStruct arg) { return arg; };
 
   // when
   auto pipe = makePipeFn(lambda, lambda, lambda);
 
   // then
-  auto res = pipe(NonCopyableArg{0});
-  EXPECT_EQ(0, res.arg_);
+  auto res = pipe(MoveOnlyStruct{0});
+  EXPECT_EQ(res.value_, 0);
 }
 
 // feature: data - any number of arguments

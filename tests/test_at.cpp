@@ -14,6 +14,7 @@
 #include <utility>
 
 #include "funkypipes/at.hpp"
+#include "utils/move_only_struct.hpp"
 
 using funkypipes::at;
 
@@ -376,21 +377,11 @@ TEST(
     At,
     argument1AssignedToCallableForwardingItsNonCopyableArgument_calledWithTwoArgumentsWhereArgument1IsNonCopyable_bothArgumentsReturned) {
   // given
-  struct NonCopyableArg {
-    explicit NonCopyableArg(int value) : value_{value} {};
-    ~NonCopyableArg() = default;
-    NonCopyableArg(const NonCopyableArg&) = delete;
-    NonCopyableArg(NonCopyableArg&&) = default;
-    NonCopyableArg& operator=(const NonCopyableArg&) = delete;
-    NonCopyableArg& operator=(NonCopyableArg&&) = delete;
-
-    int value_;  // NOLINT misc-non-private-member-variables-in-classes: intended
-  };
-  auto forwardingFn = [](NonCopyableArg arg) { return arg; };
+  auto forwardingFn = [](MoveOnlyStruct arg) { return arg; };
   auto fnAt1 = at<1>(forwardingFn);
 
   // when
-  const auto result = fnAt1(std::string{"one"}, NonCopyableArg{2});
+  const auto result = fnAt1(std::string{"one"}, MoveOnlyStruct{2});
 
   // then
   ASSERT_EQ(std::get<0>(result), "one");
@@ -402,21 +393,11 @@ TEST(
     At,
     argument0AssignedToCallableForwardingItsArgument_calledWithTwoArgumentsWhereArgument1IsNonCopyable_bothArgumentsReturned) {
   // given
-  struct NonCopyableArg {
-    explicit NonCopyableArg(int value) : value_{value} {};
-    ~NonCopyableArg() = default;
-    NonCopyableArg(const NonCopyableArg&) = delete;
-    NonCopyableArg(NonCopyableArg&&) = default;
-    NonCopyableArg& operator=(const NonCopyableArg&) = delete;
-    NonCopyableArg& operator=(NonCopyableArg&&) = delete;
-
-    int value_;  // NOLINT misc-non-private-member-variables-in-classes: intended
-  };
   auto forwardingFn = [](std::string arg) { return arg; };
   auto fnAt0 = at<0>(forwardingFn);
 
   // when
-  const auto result = fnAt0(std::string{"one"}, NonCopyableArg{2});
+  const auto result = fnAt0(std::string{"one"}, MoveOnlyStruct{2});
 
   // then
   ASSERT_EQ(std::get<0>(result).value_, 2);

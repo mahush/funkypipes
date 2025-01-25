@@ -14,6 +14,7 @@
 #include "funkypipes/funky_void.hpp"
 #include "funkypipes/make_auto_pipe.hpp"
 #include "predefined/execution_semantics/make_pipe_tests.hpp"
+#include "utils/move_only_struct.hpp"
 
 namespace funkypipes::test {
 
@@ -194,23 +195,14 @@ TEST(MakeAutoPipe, pipeForwardingConstRefererence_calledWithOptionalConstReferen
 }
 
 TEST(MakeAutoPipe, pipeWithNonCopyableOptionalArguments_composed_works) {
-  struct NonCopyableArg {
-    explicit NonCopyableArg(int arg) : m_arg{arg} {}
-    ~NonCopyableArg() = default;
-    NonCopyableArg(const NonCopyableArg&) = delete;
-    NonCopyableArg(NonCopyableArg&&) = default;
-    NonCopyableArg& operator=(const NonCopyableArg&) = delete;
-    NonCopyableArg& operator=(NonCopyableArg&&) = delete;
-    int m_arg;
-  };
-  auto lambda = [](NonCopyableArg arg) { return arg; };
-  auto lambda_optional = [](NonCopyableArg arg) { return std::make_optional<NonCopyableArg>(std::move(arg)); };
+  auto lambda = [](MoveOnlyStruct arg) { return arg; };
+  auto lambda_optional = [](MoveOnlyStruct arg) { return std::make_optional<MoveOnlyStruct>(std::move(arg)); };
 
   auto pipe = makeAutoPipe(lambda, lambda_optional, lambda);
-  auto res = pipe(NonCopyableArg{0});
+  auto res = pipe(MoveOnlyStruct{0});
 
-  EXPECT_TRUE(res.has_value());
-  EXPECT_EQ(0, res.value().m_arg);
+  ASSERT_TRUE(res.has_value());
+  ASSERT_EQ(0, res->value_);
 }
 
 // feature: chain breaking - skipping on nullopt

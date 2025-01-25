@@ -15,6 +15,7 @@
 
 #include "funkypipes/details/make_skippable.hpp"
 #include "funkypipes/details/traits.hpp"
+#include "utils/move_only_struct.hpp"
 
 namespace funkypipes::test::execution_semantics {
 
@@ -33,14 +34,14 @@ void genericFunctorCallable_calledWithValue_isExecuted(TFn makeSkippableFn) {
   {
     std::optional<int> argument{1};
     std::optional<int> res = skippable_generic_functor(argument);
-    EXPECT_TRUE(res.has_value());
-    EXPECT_EQ(res.value(), 1);
+    ASSERT_TRUE(res.has_value());
+    ASSERT_EQ(res.value(), 1);
   }
   {
     auto argument = std::make_optional("string");
     std::optional<std::string> res = skippable_generic_functor(argument);
-    EXPECT_TRUE(res.has_value());
-    EXPECT_EQ(res.value(), "string");
+    ASSERT_TRUE(res.has_value());
+    ASSERT_EQ(res.value(), "string");
   }
 }
 
@@ -53,14 +54,14 @@ void genericLambdaCallable_calledWithValue_isExecuted(TFn makeSkippableFn) {
   {
     std::optional<int> argument{1};
     std::optional<int> res = skippable_lambda(argument);
-    EXPECT_TRUE(res.has_value());
-    EXPECT_EQ(res.value(), 1);
+    ASSERT_TRUE(res.has_value());
+    ASSERT_EQ(res.value(), 1);
   }
   {
     auto argument = std::make_optional("string");
     std::optional<std::string> res = skippable_lambda(argument);
-    EXPECT_TRUE(res.has_value());
-    EXPECT_EQ(res.value(), "string");
+    ASSERT_TRUE(res.has_value());
+    ASSERT_EQ(res.value(), "string");
   }
 }
 
@@ -76,15 +77,15 @@ void overloadedFunctorCallable_calledWithValue_isExecuted(TFn makeSkippableFn) {
   {
     std::optional<int> argument{1};
     std::optional<int> res = skippable_overloaded_fn(argument);
-    EXPECT_TRUE(res.has_value());
-    EXPECT_EQ(res.value(), 1);
+    ASSERT_TRUE(res.has_value());
+    ASSERT_EQ(res.value(), 1);
   }
 
   {
     auto argument = std::make_optional("1");
     std::optional<std::string> res = skippable_overloaded_fn(argument);
-    EXPECT_TRUE(res.has_value());
-    EXPECT_EQ(res.value(), "1");
+    ASSERT_TRUE(res.has_value());
+    ASSERT_EQ(res.value(), "1");
   }
 }
 
@@ -106,8 +107,8 @@ void nonCopyableCallable_calledWithValue_isExecuted(TFn makeSkippableFn) {
 
   std::optional<int> argument{1};
   std::optional<int> res = skippable_fn(argument);
-  EXPECT_TRUE(res.has_value());
-  EXPECT_EQ(res.value(), 1);
+  ASSERT_TRUE(res.has_value());
+  ASSERT_EQ(res.value(), 1);
 }
 
 // feature: data - value categories
@@ -119,8 +120,8 @@ void callableHavingValueArgument_calledWithLValueOptional_works(TFn makeSkippabl
 
   std::optional<int> argument{1};
   std::optional<std::string> res = skippable_lambda(argument);
-  EXPECT_TRUE(res.has_value());
-  EXPECT_EQ(res.value(), "1");
+  ASSERT_TRUE(res.has_value());
+  ASSERT_EQ(res.value(), "1");
 }
 
 template <typename TFn>
@@ -131,8 +132,8 @@ void callableHavingValueArgument_calledWithConstLValueOptional_works(TFn makeSki
 
   const std::optional<int> argument{1};
   std::optional<std::string> res = skippable_lambda(argument);
-  EXPECT_TRUE(res.has_value());
-  EXPECT_EQ(res.value(), "1");
+  ASSERT_TRUE(res.has_value());
+  ASSERT_EQ(res.value(), "1");
 }
 
 template <typename TFn>
@@ -143,8 +144,8 @@ void callableHavingValueArgument_calledWithRValueOptional_works(TFn makeSkippabl
 
   std::optional<int> argument{1};
   std::optional<std::string> res = skippable_lambda(std::move(argument));
-  EXPECT_TRUE(res.has_value());
-  EXPECT_EQ(res.value(), "1");
+  ASSERT_TRUE(res.has_value());
+  ASSERT_EQ(res.value(), "1");
 }
 
 template <typename TFn>
@@ -155,8 +156,8 @@ void callableHavingReferenceArgument_calledWithRValueOptional_works(TFn makeSkip
 
   std::optional<int> argument{1};
   std::optional<std::string> res = skippable_lambda(std::move(argument));
-  EXPECT_TRUE(res.has_value());
-  EXPECT_EQ(res.value(), "1");
+  ASSERT_TRUE(res.has_value());
+  ASSERT_EQ(res.value(), "1");
 }
 
 template <typename TFn>
@@ -167,14 +168,14 @@ void callableProvidingConstReference_called_returnsOptionalConstReference(TFn ma
   int argument_raw = 1;
   std::optional<std::reference_wrapper<const int>> argument{argument_raw};
   std::optional<std::reference_wrapper<const int>> res = skippable_lambda(argument);
-  EXPECT_TRUE(res.has_value());
-  EXPECT_EQ(res.value(), 1);
+  ASSERT_TRUE(res.has_value());
+  ASSERT_EQ(res.value(), 1);
 
   const int& result_raw = res.value();
-  EXPECT_EQ(result_raw, 1);
+  ASSERT_EQ(result_raw, 1);
 
   argument_raw++;
-  EXPECT_EQ(result_raw, 2);
+  ASSERT_EQ(result_raw, 2);
 }
 
 template <typename TFn>
@@ -185,34 +186,26 @@ void callableProvidingReference_called_returnsOptionalReference(TFn makeSkippabl
   int argument_raw = 1;
   std::optional<std::reference_wrapper<int>> argument{argument_raw};
   std::optional<std::reference_wrapper<int>> res = skippable_lambda(argument);
-  EXPECT_TRUE(res.has_value());
+  ASSERT_TRUE(res.has_value());
 
   int& result_raw = res.value();
-  EXPECT_EQ(result_raw, 1);
+  ASSERT_EQ(result_raw, 1);
 
   result_raw++;
-  EXPECT_EQ(argument_raw, 2);
+  ASSERT_EQ(argument_raw, 2);
 }
 
 // feature: data - move only
 template <typename TFn>
 void callableHavingValueArgument_calledWithNonCopyableRValueOptional_works(TFn makeSkippableFn) {
-  struct NonCopyableArg {
-    NonCopyableArg() = default;
-    ~NonCopyableArg() = default;
-    NonCopyableArg(const NonCopyableArg&) = delete;
-    NonCopyableArg(NonCopyableArg&&) = default;
-    NonCopyableArg& operator=(const NonCopyableArg&) = delete;
-    NonCopyableArg& operator=(NonCopyableArg&&) = delete;
-  };
-
-  auto lambda = [](NonCopyableArg arg) { return arg; };
+  auto lambda = [](MoveOnlyStruct arg) { return arg; };
 
   auto skippable_lambda = makeSkippableFn(lambda);
 
-  auto argument = std::make_optional(NonCopyableArg{});
-  std::optional<NonCopyableArg> res = skippable_lambda(std::move(argument));
-  EXPECT_TRUE(res.has_value());
+  auto argument = std::make_optional(MoveOnlyStruct{0});
+  std::optional<MoveOnlyStruct> res = skippable_lambda(std::move(argument));
+  ASSERT_TRUE(res.has_value());
+  ASSERT_EQ(res->value_, 0);
 }
 
 // feature: std::optional support
@@ -224,8 +217,8 @@ void callableReturningOptional_calledWithValue_isExecuted(TFn makeSkippableFn) {
 
   std::optional<int> argument{1};
   std::optional<std::string> res = skippable_lambda(argument);
-  EXPECT_TRUE(res.has_value());
-  EXPECT_EQ(res.value(), "1");
+  ASSERT_TRUE(res.has_value());
+  ASSERT_EQ(res.value(), "1");
 }
 
 // feature: chain breaking
@@ -240,7 +233,7 @@ void callableReturningValue_calledWithNullopt_isSkipped(TFn makeSkippableFn) {
   std::optional<int> argument{std::nullopt};
   std::optional<std::string> res;
   ASSERT_NO_THROW(res = skippable_lambda(argument));
-  EXPECT_FALSE(res.has_value());
+  ASSERT_FALSE(res.has_value());
 }
 
 template <typename TFn>
@@ -254,7 +247,7 @@ void callableReturningOptional_calledWithNullopt_isSkipped(TFn makeSkippableFn) 
   std::optional<int> argument{std::nullopt};
   std::optional<std::string> res;
   ASSERT_NO_THROW(res = skippable_lambda(argument));
-  EXPECT_FALSE(res.has_value());
+  ASSERT_FALSE(res.has_value());
 }
 
 }  // namespace funkypipes::test::execution_semantics

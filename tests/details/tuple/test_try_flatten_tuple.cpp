@@ -13,6 +13,7 @@
 #include <utility>
 
 #include "funkypipes/details/tuple/try_flatten_tuple.hpp"
+#include "utils/move_only_struct.hpp"
 
 using funkypipes::details::tryFlattenTuple;
 
@@ -53,17 +54,6 @@ TEST(TryFlattenTuple, tupleWithZeroElement_tryFlattened_voidReturned) {
   using ResultType = std::invoke_result_t<decltype(tryFlattenTuple<decltype(original)>), decltype(original)>;
   static_assert(std::is_same_v<ResultType, void>);
 }
-
-struct MoveConstructableOnlyStruct {
-  explicit MoveConstructableOnlyStruct(int value) : value_(value) {}
-  ~MoveConstructableOnlyStruct() = default;
-  MoveConstructableOnlyStruct(const MoveConstructableOnlyStruct&) = delete;
-  MoveConstructableOnlyStruct(MoveConstructableOnlyStruct&&) = default;
-  MoveConstructableOnlyStruct& operator=(const MoveConstructableOnlyStruct&) = delete;
-  MoveConstructableOnlyStruct& operator=(MoveConstructableOnlyStruct&&) = delete;
-
-  int value_;  // NOLINT public visibility is intended here
-};
 
 // Ensure that a lvalue reference tuple is returned by value
 TEST(TryFlattenTuple, lvalueTupleWithMultipleElements_tryFlattened_tupleReturnedByValue) {
@@ -120,57 +110,58 @@ TEST(TryFlattenTuple, lvalueTupleWithSingleElement_tryFlattened_elementReturnedB
   EXPECT_EQ(outputElement, 0);
 }
 
-// Ensure that a tupe with single lvalue reference element leads to a lvalue reference result
+// Ensure that a tuple with single lvalue reference element leads to a lvalue reference result
 TEST(TryFlattenTuple, lvalueTupleWithSingleElement_tryFlattened_elementReturnedByLValueReference) {
   // given
-  MoveConstructableOnlyStruct inputElement{0};
+  MoveOnlyStruct inputElement{0};
   auto original = std::forward_as_tuple(inputElement);
 
   // when
   decltype(auto) outputElement = tryFlattenTuple(original);
 
   // then
-  static_assert(std::is_same_v<decltype(outputElement), MoveConstructableOnlyStruct&>);
+  static_assert(std::is_same_v<decltype(outputElement), MoveOnlyStruct&>);
   EXPECT_EQ(outputElement.value_, 0);
   outputElement.value_ = 1;
   EXPECT_EQ(inputElement.value_, 1);
 }
 
-// Ensure that a tupe with single const lvalue reference element leads to a const lvalue reference result
+// Ensure that a tuple with single const lvalue reference element leads to a const lvalue reference result
 TEST(TryFlattenTuple, constLValueTupleWithSingleElement_tryFlattened_elementReturnedByConstLValueReference) {
   // given
-  MoveConstructableOnlyStruct inputElement{0};
+  MoveOnlyStruct inputElement{0};
   auto original = std::forward_as_tuple(std::as_const(inputElement));
 
   // when
   decltype(auto) outputElement = tryFlattenTuple(original);
 
   // then
-  static_assert(std::is_same_v<decltype(outputElement), const MoveConstructableOnlyStruct&>);
+  static_assert(std::is_same_v<decltype(outputElement), const MoveOnlyStruct&>);
   EXPECT_EQ(outputElement.value_, 0);
   inputElement.value_ = 1;
   EXPECT_EQ(outputElement.value_, 1);
 }
 
-// Ensure that a tupe with single rvalue reference element leads to a rvalue reference result
-TEST(TryFlattenTuple, rvalueTupleWithSingleElement_tryFlattened_elementReturnedByRValueReference) {
+// Ensure that a tuple with a single rvalue reference element leads to a rvalue reference result
+TEST(TryFlattenTuple, rvalueTupleWithRValueReferenceElement_tryFlattened_elementReturnedByRValueReference) {
   // given
-  MoveConstructableOnlyStruct inputElement{
-      0};  // Note: the object to move from needs still to be available when accessing the rvalue reference in the end
+  // NOLINTNEXTLINE misc-const-correctness: is about to be moved
+  MoveOnlyStruct inputElement{0};  // Note: The object to move from needs still to be available
+                                   // when accessing the rvalue reference in the end
   auto original = std::forward_as_tuple(std::move(inputElement));
 
   // when
   decltype(auto) outputElement = tryFlattenTuple(std::move(original));
 
   // then
-  static_assert(std::is_same_v<decltype(outputElement), MoveConstructableOnlyStruct&&>);
+  static_assert(std::is_same_v<decltype(outputElement), MoveOnlyStruct&&>);
   EXPECT_EQ(outputElement.value_, 0);
 }
 
 // Ensure that a tuple with a single move only value element leads to returning the element by value
 TEST(TryFlattenTuple, rvalueTupleWithMoveOnlyElement_tryFlattened_moveOnlyElementReturned) {
   // given
-  auto original = std::make_tuple(MoveConstructableOnlyStruct{0});
+  auto original = std::make_tuple(MoveOnlyStruct{0});
 
   // when
   decltype(auto) outputElement = tryFlattenTuple(std::move(original));
