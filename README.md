@@ -213,18 +213,18 @@ This is especially useful for wrapping an overloaded function into a generic cal
 
 Example:
 ```cpp
-// wrapping overloaded method
-auto callable1 = MAKE_CALLABLE(std::to_string);
-ASSERT_EQ(callable1(0), "0");
-ASSERT_EQ(callable1(1.0), "1.000000");
+class Appender {
+  std::string appendix_;
 
-// wrapping member function call
-struct Foo {
-  int bar(int arg) const { return arg; }
+ public:
+  Appender(std::string appendix) : appendix_{appendix} {}
+  std::string append(std::string arg) const { return arg + appendix_; }
 };
-Foo foo;
-auto callable2 = MAKE_CALLABLE(foo.bar);
-ASSERT_EQ(callable2(3), 3);
+
+Appender appender{"A"};
+auto pipe = makePipe(MAKE_CALLABLE(std::to_string), MAKE_CALLABLE(appender.append));
+
+ASSERT_EQ(pipe(0), "0A");
 ```
 
 ### **passAlong**
