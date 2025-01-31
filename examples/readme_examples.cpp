@@ -5,6 +5,7 @@
 
 #include "funkypipes/at.hpp"
 #include "funkypipes/bind_front.hpp"
+#include "funkypipes/fork_and_bypass.hpp"
 #include "funkypipes/make_auto_pipe.hpp"
 #include "funkypipes/make_callable.hpp"
 #include "funkypipes/make_pipe.hpp"
@@ -12,7 +13,7 @@
 using namespace funkypipes;
 using namespace std::string_literals;
 
-TEST(ReadmeExamples, readme_make_pipe_basic) {
+TEST(ReadmeExamples, make_pipe_basic) {
   auto classifyTemperature = [](int temperature) -> std::tuple<bool, std::string> {
     bool is_alert = (temperature > 42);
     std::string temperatureInfo = "Temperature=" + std::to_string(temperature);
@@ -31,7 +32,7 @@ TEST(ReadmeExamples, readme_make_pipe_basic) {
   ASSERT_EQ(generateTemperatureLogEnty(50), "ALERT: Temperature=50");
 }
 
-TEST(ReadmeExamples, readme_make_pipe_reference) {
+TEST(ReadmeExamples, make_pipe_reference) {
   auto forwardReference = [](bool& value) -> bool& { return value; };
 
   auto pipe = makePipe(forwardReference, forwardReference);
@@ -44,7 +45,7 @@ TEST(ReadmeExamples, readme_make_pipe_reference) {
   ASSERT_EQ(argument, false);
 }
 
-TEST(ReadmeExamples, readme_make_pipe_nested) {
+TEST(ReadmeExamples, make_pipe_nested) {
   auto increment = [](int value) {
     ++value;
     return value;
@@ -57,7 +58,7 @@ TEST(ReadmeExamples, readme_make_pipe_nested) {
   ASSERT_EQ(pipe3(0), 6);
 }
 
-TEST(ReadmeExamples, readme_make_pipe_chain_breaking) {
+TEST(ReadmeExamples, make_pipe_chain_breaking) {
   auto breakWhenZero = [](int value) -> std::optional<int> {
     return (value == 0) ? std::nullopt : std::make_optional(value);
   };
@@ -75,7 +76,7 @@ TEST(ReadmeExamples, readme_make_pipe_chain_breaking) {
   EXPECT_EQ(res2, "1");
 }
 
-TEST(ReadmeExamples, readme_make_auto_pipe_chain_breaking) {
+TEST(ReadmeExamples, make_auto_pipe_chain_breaking) {
   auto breakWhenZero = [](int value) -> std::optional<int> {
     return (value == 0) ? std::nullopt : std::make_optional(value);
   };
@@ -92,7 +93,7 @@ TEST(ReadmeExamples, readme_make_auto_pipe_chain_breaking) {
   EXPECT_EQ(res2, "2");
 }
 
-TEST(ReadmeExamples, readme_bind_front) {
+TEST(ReadmeExamples, bind_front) {
   auto greet = [](const std::string& salutation, const std::string& name) { return salutation + " " + name + "!"; };
 
   auto greetWithHello = bindFront(greet, "Hello");
@@ -101,7 +102,7 @@ TEST(ReadmeExamples, readme_bind_front) {
   ASSERT_EQ(result, "Hello World!");
 }
 
-TEST(ReadmeExamples, readme_pipe_with_at_simple) {
+TEST(ReadmeExamples, pipe_with_at_simple) {
   auto incrementFn = [](int value) { return value + 1; };
 
   auto pipe = makePipe(at<1>(incrementFn), at<int>(incrementFn));
@@ -110,7 +111,7 @@ TEST(ReadmeExamples, readme_pipe_with_at_simple) {
   ASSERT_EQ(result, std::make_tuple(1.0, 4));
 }
 
-TEST(ReadmeExamples, readme_pipe_with_at_advanced) {
+TEST(ReadmeExamples, pipe_with_at_advanced) {
   auto provideNameAndYearOfBirth = []() { return std::make_tuple("Haskell Curry"s, 1900); };
   auto toBirthString = [](auto year) { return "born in "s + std::to_string(year); };
   struct Separator {
@@ -129,17 +130,57 @@ TEST(ReadmeExamples, readme_pipe_with_at_advanced) {
   ASSERT_EQ(providePersonInfoByIndex(Separator{" | "}), "Haskell Curry | born in 1900"s);
 }
 
-TEST(ReadmeExamples, readme_make_callable) {
-  // wrapping overloaded method
-  auto callable1 = MAKE_CALLABLE(std::to_string);
-  ASSERT_EQ(callable1(0), "0");
-  ASSERT_EQ(callable1(1.0), "1.000000");
+TEST(ReadmeExamples, make_callable) {
+  class Appender {
+    std::string appendix_;
 
-  // wrapping member function call
-  struct Foo {
-    int bar(int arg) const { return arg; }
+   public:
+    Appender(std::string appendix) : appendix_{appendix} {}
+    std::string append(std::string arg) const { return arg + appendix_; }
   };
-  Foo foo;
-  auto callable2 = MAKE_CALLABLE(foo.bar);
-  ASSERT_EQ(callable2(3), 3);
+
+  Appender appender{"A"};
+  auto pipe = makePipe(MAKE_CALLABLE(std::to_string), MAKE_CALLABLE(appender.append));
+
+  ASSERT_EQ(pipe(0), "0A");
+}
+
+TEST(ReadmeExamples, fork_and_bypass_basic) {
+  auto incrementFn = [](int arg) { return arg + 1; };
+
+  auto pipe = makePipe(incrementFn, forkAndBypass(incrementFn));
+
+  ASSERT_EQ(pipe(0), std::make_tuple(2, 1));
+}
+
+TEST(ReadmeExamples, fork_and_bypass_by_index) {
+  auto plusFn = [](int lhs, int rhs) { return lhs + rhs; };
+  auto multiplyFn = [](int lhs, int rhs) { return lhs * rhs; };
+
+  auto pipe = makePipe(forkAndBypass<1>(plusFn), multiplyFn);
+
+  ASSERT_EQ(pipe(1, 2), 6);
+}
+
+TEST(ReadmeExamples, fork_and_bypass_by_type) {
+  enum class Locale { en_US, de_DE };
+  auto appendDateFn = [](std::string buffer, Locale config) {
+    buffer += (config == Locale::en_US) ? "9/15/1959"s : "15.09.1959"s;
+    return buffer;
+  };
+  auto appendSpaceFn = [](std::string buffer, Locale) {
+    buffer += " ";
+    return buffer;
+  };
+
+  auto appendTimeFn = [](std::string buffer, Locale config) {
+    buffer += (config == Locale::en_US) ? "12:01 AM"s : "00:01"s;
+    return buffer;
+  };
+
+  auto appendDateTime =
+      makePipe(forkAndBypass<Locale>(appendDateFn), forkAndBypass<Locale>(appendSpaceFn), appendTimeFn);
+
+  ASSERT_EQ(appendDateTime("en_US: "s, Locale::en_US), "en_US: 9/15/1959 12:01 AM"s);
+  ASSERT_EQ(appendDateTime("de_DE: "s, Locale::de_DE), "de_DE: 15.09.1959 00:01"s);
 }

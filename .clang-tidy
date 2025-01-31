@@ -6,8 +6,11 @@ Checks: >
     -fuchsia-default-arguments-calls,
     -fuchsia-overloaded-operator,
     -fuchsia-trailing-return,
+    -google-readability-avoid-underscore-in-googletest-name,
     -llvmlibc*,
+    -misc-non-private-member-variables-in-classes,
     -modernize-use-trailing-return-type,
+    -readability-identifier-length,
 WarningsAsErrors: true
 CheckOptions:
   # Enable specific Google style options

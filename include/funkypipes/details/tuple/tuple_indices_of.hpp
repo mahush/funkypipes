@@ -41,12 +41,24 @@ struct TupleIndicesOfImpl<TRequestedElement, std::tuple<TElements...>> {
   using type = decltype(findMatchingIndices(std::index_sequence_for<TElements...>{}));
 };
 
+// Helper trait that ectends TupleIndicesOf by asserting that the requested element was found at least once.
+template <typename TRequested, typename TTuple>
+struct TupleIndicesOfAssertingSuccessImpl {
+  using type = typename TupleIndicesOfImpl<TRequested, TTuple>::type;
+  static_assert(type::size() >= 1, "At least one of the selected types is not available");
+};
+
 }  // namespace impl
 
 // This template resolves the requested type to matching indices of the given tuple. The indices are provided as index
 // sequence.
 template <typename TRequested, typename TTuple>
-using TupleIndicesOf = typename impl::TupleIndicesOfImpl<TRequested, TTuple>::type;
+using TupleIndicesOf = typename ::funkypipes::details::impl::TupleIndicesOfImpl<TRequested, TTuple>::type;
+
+// like TupleIndicesOf but asserts that at least one matching index was found.
+template <typename TRequested, typename TTuple>
+using TupleIndicesOfAssertingSuccess =
+    typename ::funkypipes::details::impl::TupleIndicesOfAssertingSuccessImpl<TRequested, TTuple>::type;
 
 }  // namespace funkypipes::details
 

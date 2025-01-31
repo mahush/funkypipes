@@ -29,6 +29,7 @@ endif()
 enable_testing()
 add_executable(test_funkypipes examples/readme_examples.cpp
                                tests/details/tuple/test_index_sequence.cpp
+                               tests/details/tuple/test_recreate_tuple_from_indices.cpp
                                tests/details/tuple/test_resolve_rvalue_references.cpp
                                tests/details/tuple/test_separate_tuple_elements.cpp
                                tests/details/tuple/test_try_flatten_tuple.cpp
@@ -37,6 +38,7 @@ add_executable(test_funkypipes examples/readme_examples.cpp
                                tests/test_and_then.cpp
                                tests/test_bind_front.cpp
                                tests/test_at.cpp
+                               tests/test_fork_and_bypass.cpp
                                tests/test_make_arg_optional.cpp
                                tests/test_make_auto_pipe.cpp
                                tests/test_make_callable.cpp
@@ -54,6 +56,7 @@ add_executable(test_funkypipes examples/readme_examples.cpp
 target_link_libraries(test_funkypipes PRIVATE gtest_main)
 target_include_directories(test_funkypipes PRIVATE
     ${PROJECT_SOURCE_DIR}/include
+    ${PROJECT_SOURCE_DIR}/tests
 )
 target_compile_options(test_funkypipes PRIVATE -Wall -Wextra -Wpedantic)
 

@@ -213,20 +213,70 @@ This is especially useful for wrapping an overloaded function into a generic cal
 
 Example:
 ```cpp
-// wrapping overloaded method
-auto callable1 = MAKE_CALLABLE(std::to_string);
-ASSERT_EQ(callable1(0), "0");
-ASSERT_EQ(callable1(1.0), "1.000000");
+class Appender {
+  std::string appendix_;
 
-// wrapping member function call
-struct Foo {
-  int bar(int arg) const { return arg; }
+ public:
+  Appender(std::string appendix) : appendix_{appendix} {}
+  std::string append(std::string arg) const { return arg + appendix_; }
 };
-Foo foo;
-auto callable2 = MAKE_CALLABLE(foo.bar);
-ASSERT_EQ(callable2(3), 3);
+
+Appender appender{"A"};
+auto pipe = makePipe(MAKE_CALLABLE(std::to_string), MAKE_CALLABLE(appender.append));
+
+ASSERT_EQ(pipe(0), "0A");
 ```
 
+### **forkAndBypass**
+
+A decorator function that duplicates all or a subset of the input arguments and bypass the duplicates around the decorated function. The decorated function processes all input arguments as usual. Finally the decorater function returns both the forked arguments and the output of the decorated function.
+
+  - **Input**: All input arguments are forwarded to the decorated function.
+  - **Forking**: Either all input arguments ar forked or only a subset if specified as template paremeter via indices or types. The forked arguments bypass the decorated function.
+  - **Output**: The concatenation of the forked input arguments and the result of the decorated function, in that exact order.
+
+Basic Example:
+```cpp
+auto incrementFn = [](int arg) { return arg + 1; };
+
+auto pipe = makePipe(incrementFn, forkAndBypass(incrementFn));
+
+ASSERT_EQ(pipe(0), std::make_tuple(2, 1));
+```
+
+By Index Example:
+```cpp
+auto plusFn = [](int lhs, int rhs) { return lhs + rhs; };
+auto multiplyFn = [](int lhs, int rhs) { return lhs * rhs; };
+
+auto pipe = makePipe(forkAndBypass<1>(plusFn), multiplyFn);
+
+ASSERT_EQ(pipe(1, 2), 6);
+```
+
+By Type Example:
+```cpp
+enum class Locale { en_US, de_DE };
+auto appendDateFn = [](std::string buffer, Locale config) {
+  buffer += (config == Locale::en_US) ? "9/15/1959"s : "15.09.1959"s;
+  return buffer;
+};
+auto appendSpaceFn = [](std::string buffer, Locale) {
+  buffer += " ";
+  return buffer;
+};
+
+auto appendTimeFn = [](std::string buffer, Locale config) {
+  buffer += (config == Locale::en_US) ? "12:01 AM"s : "00:01"s;
+  return buffer;
+};
+
+auto appendDateTime =
+    makePipe(forkAndBypass<Locale>(appendDateFn), forkAndBypass<Locale>(appendSpaceFn), appendTimeFn);
+
+ASSERT_EQ(appendDateTime("en_US: "s, Locale::en_US), "en_US: 9/15/1959 12:01 AM"s);
+ASSERT_EQ(appendDateTime("de_DE: "s, Locale::de_DE), "de_DE: 15.09.1959 00:01"s);
+```
 
 ### **more to come**
 See the [Roadmap](https://github.com/mahush/funkypipes/blob/main/docs/roadmap.md)

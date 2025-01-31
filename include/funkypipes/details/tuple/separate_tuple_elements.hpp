@@ -14,18 +14,11 @@
 #include <utility>
 
 #include "funkypipes/details/tuple/index_sequence.hpp"
+#include "funkypipes/details/tuple/recreate_tuple_from_indices.hpp"
 
 namespace funkypipes::details {
 
 namespace impl {
-
-// Helper function that creates a new tuple based on the given one, using the specified indices. Only the
-// elements at Idxs are accessed, all other elements are not touched. The original element types are preserved.
-template <typename TTuple, std::size_t... Idxs>
-auto recreateTupleFromIndices(TTuple&& tuple, std::index_sequence<Idxs...>) {
-  using ResultTuple = std::tuple<std::tuple_element_t<Idxs, std::decay_t<TTuple>>...>;
-  return ResultTuple{std::get<Idxs>(std::forward<TTuple>(tuple))...};
-}
 
 // Implementation of separating the specified elements of a given tuple into two tuples, one that contains the separated
 // elements and another containing the remaining ones.
@@ -48,13 +41,6 @@ auto separateTupleElements(TTuple&& tuple) {
 
 }  // namespace impl
 
-// This function takes an lvalue tuple as input and returns the separated element, along with a new tuple containing the
-// remaining elements.
-template <std::size_t... IdxsToSeparate, typename... TElements>
-auto separateTupleElements(std::tuple<TElements...>& tuple) {
-  return impl::separateTupleElements<IdxsToSeparate...>(tuple);
-}
-
 // This function takes an const lvalue tuple as input and returns the separated element, along with a new tuple
 // containing the remaining elements.
 template <std::size_t... IdxsToSeparate, typename... TElements>
@@ -62,10 +48,14 @@ auto separateTupleElements(const std::tuple<TElements...>& tuple) {
   return impl::separateTupleElements<IdxsToSeparate...>(tuple);
 }
 
-// This function takes an rvalue tuple as input and returns the separated element, along with a new tuple containing the
-// remaining elements.
+// These functions takes an rvalue tuple as input and returns the separated element, along with a new tuple containing
+// the remaining elements.
 template <std::size_t... IdxsToSeparate, typename... TElements>
 auto separateTupleElements(std::tuple<TElements...>&& tuple) {
+  return impl::separateTupleElements<IdxsToSeparate...>(std::move(tuple));
+}
+template <std::size_t... IdxsToSeparate, typename... TElements>
+auto separateTupleElements(std::tuple<TElements...>&& tuple, const std::index_sequence<IdxsToSeparate...>&) {
   return impl::separateTupleElements<IdxsToSeparate...>(std::move(tuple));
 }
 
