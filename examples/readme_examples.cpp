@@ -5,6 +5,7 @@
 
 #include "funkypipes/at.hpp"
 #include "funkypipes/bind_front.hpp"
+#include "funkypipes/fork.hpp"
 #include "funkypipes/make_auto_pipe.hpp"
 #include "funkypipes/make_callable.hpp"
 #include "funkypipes/make_pipe.hpp"

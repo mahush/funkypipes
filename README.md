@@ -227,6 +227,23 @@ auto pipe = makePipe(MAKE_CALLABLE(std::to_string), MAKE_CALLABLE(appender.appen
 ASSERT_EQ(pipe(0), "0A");
 ```
 
+### **fork**
+
+A decorator function that forwards all arguments to each of the decorated functions and returns a tuple of their results. If possible the result tuple is flattened.
+
+  - **Input**: All input arguments are forwarded to all the decorated functions.
+  - **Output**: The concatenation of the results of the decorated functions.
+
+Example:
+```cpp
+auto incrementFn = [](int arg) { return arg + 1; };
+auto decrementFn = [](int arg) { return arg - 1; };
+
+auto incrementAndDecrementFn = fork(incrementFn, decrementFn);
+
+ASSERT_EQ(incrementAndDecrementFn(3), std::make_tuple(4, 2));
+```
+
 ### **passAlong**
 
 A decorator function that duplicates the specified input arguments and passes the duplicates along. The decorated function processes all input arguments as usual. Finally the decorator function returns both the duplicated arguments and the output of the decorated function.
