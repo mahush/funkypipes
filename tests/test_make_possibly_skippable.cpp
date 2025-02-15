@@ -52,14 +52,14 @@ TEST(MakePossiblySkippable, callablHavingValueArgumente_calledWithRValue_works) 
   ASSERT_NO_FATAL_FAILURE(signature_propagation::callableForwardingItsValueArgument_calledWithRValue_returnsArguments(
       makePossiblySkippableFn));
 }
-TEST(MakePossiblySkippable, callableForwardingConstReference_calledWithConstReference_returnsConstReference) {
+TEST(MakePossiblySkippable, callableForwardingConstLValueReference_called_constLValueReferenceIsPreserved) {
   ASSERT_NO_FATAL_FAILURE(
-      signature_propagation::callableForwardingConstReference_calledWithConstReference_returnsConstReference(
+      signature_propagation::callableForwardingConstLValueReference_called_constLValueReferenceIsPreserved(
           makePossiblySkippableFn));
 }
-TEST(MakePossiblySkippable, callableForwardingReference_calledWithReference_returnsReference) {
-  ASSERT_NO_FATAL_FAILURE(
-      signature_propagation::callableForwardingReference_calledWithReference_returnsReference(makePossiblySkippableFn));
+TEST(MakePossiblySkippable, callableForwardingLValueReference_called_lvalueReferenceIsPreserved) {
+  ASSERT_NO_FATAL_FAILURE(signature_propagation::callableForwardingLValueReference_called_lvalueReferenceIsPreserved(
+      makePossiblySkippableFn));
 }
 
 // feature: data - move only

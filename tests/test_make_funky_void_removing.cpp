@@ -53,14 +53,14 @@ TEST(MakeFunkyVoidRemoving, callableForwardingItsValueArgument_calledWithRValue_
       makeFunkyVoidRemovingFn));
 }
 
-TEST(MakeFunkyVoidRemoving, callableForwardingItsArgument_calledWithReference_referenceIsPreserved) {
-  ASSERT_NO_FATAL_FAILURE(
-      signature_propagation::callableForwardingReference_calledWithReference_returnsReference(makeFunkyVoidRemovingFn));
+TEST(MakeFunkyVoidRemoving, callableForwardingLValueReference_called_lvalueReferenceIsPreserved) {
+  ASSERT_NO_FATAL_FAILURE(signature_propagation::callableForwardingLValueReference_called_lvalueReferenceIsPreserved(
+      makeFunkyVoidRemovingFn));
 }
 
-TEST(MakeFunkyVoidRemoving, callableForwardingItsArgument_calledWithConstTeference_constReferenceIsPreserved) {
+TEST(MakeFunkyVoidRemoving, callableForwardingConstLValueReference_called_constLValueReferenceIsPreserved) {
   ASSERT_NO_FATAL_FAILURE(
-      signature_propagation::callableForwardingConstReference_calledWithConstReference_returnsConstReference(
+      signature_propagation::callableForwardingConstLValueReference_called_constLValueReferenceIsPreserved(
           makeFunkyVoidRemovingFn));
 }
 
