@@ -63,29 +63,34 @@ void callableForwardingItsValueArgument_calledWithRValue_returnsArguments(TFn de
 }
 
 template <typename TFn>
-void callableForwardingConstReference_calledWithConstReference_returnsConstReference(TFn decorating_fn) {
+void callableForwardingConstLValueReference_called_constLValueReferenceIsPreserved(TFn decorating_fn) {
+  // given
   auto lambda = [](const int& arg) -> const int& { return arg; };
-
   auto decorated_fn = decorating_fn(lambda);
 
+  // then
   int argument{1};
-  const int& result = decorated_fn(argument);
+  decltype(auto) result = decorated_fn(argument);
 
+  // then
+  static_assert(std::is_same_v<decltype(result), const int&>);
   EXPECT_EQ(result, 1);
-
   argument++;
   EXPECT_EQ(result, 2);
 }
 
 template <typename TFn>
-void callableForwardingReference_calledWithReference_returnsReference(TFn decorating_fn) {
+void callableForwardingLValueReference_called_lvalueReferenceIsPreserved(TFn decorating_fn) {
+  // given
   auto lambda = [](int& arg) -> int& { return arg; };
-
   auto decorated_fn = decorating_fn(lambda);
 
+  // when
   int argument{1};
-  int& result = decorated_fn(argument);
+  decltype(auto) result = decorated_fn(argument);
 
+  // then
+  static_assert(std::is_same_v<decltype(result), int&>);
   EXPECT_EQ(result, 1);
 
   result++;
