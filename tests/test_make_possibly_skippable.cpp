@@ -61,6 +61,10 @@ TEST(MakePossiblySkippable, callableForwardingLValueReference_called_lvalueRefer
   ASSERT_NO_FATAL_FAILURE(signature_propagation::callableForwardingLValueReference_called_lvalueReferenceIsPreserved(
       makePossiblySkippableFn));
 }
+TEST(MakePossiblySkippable, callableForwardingRValueReference_called_rvalueReferenceIsPreserved) {
+  ASSERT_NO_FATAL_FAILURE(signature_propagation::callableForwardingRValueReference_called_rvalueReferenceIsPreserved(
+      makePossiblySkippableFn));
+}
 
 // feature: data - move only
 TEST(MakePossiblySkippable, callable_calledWithNonCopyableValue_works) {

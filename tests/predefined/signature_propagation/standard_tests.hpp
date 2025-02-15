@@ -92,7 +92,23 @@ void callableForwardingLValueReference_called_lvalueReferenceIsPreserved(TFn dec
   // then
   static_assert(std::is_same_v<decltype(result), int&>);
   EXPECT_EQ(result, 1);
+  result++;
+  EXPECT_EQ(argument, 2);
+}
 
+template <typename TFn>
+void callableForwardingRValueReference_called_rvalueReferenceIsPreserved(TFn decorating_fn) {
+  // given
+  auto lambda = [](int&& arg) -> int&& { return std::move(arg); };
+  auto decorated_fn = decorating_fn(lambda);
+
+  // when
+  int argument{1};
+  decltype(auto) result = decorated_fn(std::move(argument));
+
+  // then
+  static_assert(std::is_same_v<decltype(result), int&&>);
+  EXPECT_EQ(result, 1);
   result++;
   EXPECT_EQ(argument, 2);
 }

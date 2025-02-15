@@ -66,6 +66,11 @@ TEST(MakeFunkyVoidReturning, callableForwardingConstLValueReference_called_const
           makeFunkyVoidReturningFn));
 }
 
+TEST(MakeFunkyVoidReturning, callableForwardingRValueReference_called_rvalueReferenceIsPreserved) {
+  ASSERT_NO_FATAL_FAILURE(signature_propagation::callableForwardingRValueReference_called_rvalueReferenceIsPreserved(
+      makeFunkyVoidReturningFn));
+}
+
 // feature data: move only
 TEST(MakeFunkyVoidReturning, callable_calledWithNonCopyableValue_works) {
   ASSERT_NO_FATAL_FAILURE(signature_propagation::callable_calledWithNonCopyableValue_works(makeFunkyVoidReturningFn));
