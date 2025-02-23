@@ -7,6 +7,43 @@
 - **Callables**: Refers to functions, function objects, lambdas also overloaded and generic ones.
 - **Composing in a tacit style**: Callables are composed into pipelines using the tools provided by the library without explicitly specifying the arguments. This style of programming is also known as point-free style, where the focus is on the composition of functions rather than the data they operate on.
 ---
+
+## Why *funkypipes*?
+
+### UNIX proved right
+
+In the 1970s, Douglas McIlroy proclaimed:
+- Write programs that do one thing and do it well.
+- Write programs to work together.
+- Write programs to handle text streams, because that is a universal interface.
+
+-> By viewing programs as functions and text streams as arbitrary data types, *funkypipes* translates the essence of UNIX-style pipelines into modern C++, allowing you to compose highly flexible yet type-safe functional pipelines.
+
+### Embracing functional programming
+
+Regardless of your programming style, you use **functions**—and at some point, you **compose** them. The more functional your approach, the more function composition becomes essential.
+
+Modern C++ embraces functional programming (e.g.: function objects, lambdas, monadic operations (`std::optional`, `std::expected`), and ranges), making functional patterns more accessible. However, general-purpose function composition remains missing from the language and standard library.
+
+-> *funkypipes* fills this gap by providing an intuitive and powerful toolbox for composing functions with ease — bringing true function composition to modern C++.
+
+### Beyond monadic operations
+
+Monadic operations for `std::optional`‘s and `std::expected`'s are great, but there are limitations:
+- You only can build pipelines that start with a `std::optional` or a `std::expected` variable.
+- You only can build sequential pipelines; applying functions that take or return multiple values is not possible.
+- You can not incorporate functions that return `void`.
+
+-> *funkypipes* enables the construction of pipelines seamlessly, regardless of whether you're working with `std::optional`, or dealing with varying numbers of arguments and return values.
+
+### Complementing std::ranges
+
+C++20 introduced ranges, which allow declarative transformations on homogeneous sequences (e.g., `std::vector<int>`). However, ranges do not help with composing functions processing heterogeneous data.
+
+-> *funkypipes* complements ranges by enabling function composition beyond sequences.
+
+---
+
 ## General Features
 
 - **Language Standard**: c++17
@@ -142,6 +179,31 @@ const auto result = greetWithHello("World");
 ASSERT_EQ(result, "Hello World!");
 ```
 
+### **makeCallable**
+
+A macro that wraps the specified invocable expression into a lambda function. The resulting lambda can be invoked with
+any number of arguments, which are then perfectly forwarded to the original invocable expression. The lambda returns
+the result of this invocation.
+
+This is especially useful for wrapping an overloaded function into a generic callable object, allowing it to be used as a pipeline element. Additionally, wrapping member function calls with this approach enhances readability compared to using `std::bind` or `std::bind_front`.
+
+Example:
+```cpp
+class Appender {
+  std::string appendix_;
+
+ public:
+  Appender(std::string appendix) : appendix_{appendix} {}
+  std::string append(std::string arg) const { return arg + appendix_; }
+};
+
+Appender appender{"A"};
+auto pipe = makePipe(MAKE_CALLABLE(std::to_string), MAKE_CALLABLE(appender.append));
+
+ASSERT_EQ(pipe(0), "0A");
+```
+
+
 ### **at**
 
 A decorator for transforming only selected arguments. It takes a function and a list of indices/types, returning a new function that applies the original function to the specified arguments while leaving others unchanged. This allows selective transformation of arguments within a pipe.
@@ -201,30 +263,6 @@ auto providePersonInfoByIndex = makePipe(at<>(provideNameAndYearOfBirth), at<2>(
 
 ASSERT_EQ(providePersonInfoByType(Separator{", "}), "Haskell Curry, born in 1900"s);
 ASSERT_EQ(providePersonInfoByIndex(Separator{" | "}), "Haskell Curry | born in 1900"s);
-```
-
-### **makeCallable**
-
-A macro that wraps the specified invocable expression into a lambda function. The resulting lambda can be invoked with
-any number of arguments, which are then perfectly forwarded to the original invocable expression. The lambda returns
-the result of this invocation.
-
-This is especially useful for wrapping an overloaded function into a generic callable object, allowing it to be used as a pipeline element. Additionally, wrapping member function calls with this approach enhances readability compared to using `std::bind` or `std::bind_front`.
-
-Example:
-```cpp
-class Appender {
-  std::string appendix_;
-
- public:
-  Appender(std::string appendix) : appendix_{appendix} {}
-  std::string append(std::string arg) const { return arg + appendix_; }
-};
-
-Appender appender{"A"};
-auto pipe = makePipe(MAKE_CALLABLE(std::to_string), MAKE_CALLABLE(appender.append));
-
-ASSERT_EQ(pipe(0), "0A");
 ```
 
 ### **fork**
