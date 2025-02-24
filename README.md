@@ -8,6 +8,30 @@
 - **Composing in a tacit style**: Callables are composed into pipelines using the tools provided by the library without explicitly specifying the arguments. This style of programming is also known as point-free style, where the focus is on the composition of functions rather than the data they operate on.
 <BR>
 
+## A Simple Example
+
+Consider a simple transformation pipeline in C++, consisting of following functions:
+```cpp
+int doubleFn(int x) { return x * 2; }
+std::string toStringFn(int x) { return std::to_string(x); }
+```
+
+Traditionally you would compose by calling functions explicitly and passing arguments manually:
+```cpp
+int value = 5;
+int doubled = doubleFn(value);
+std::string result = toStringFn(doubled);
+```
+
+*funkypipes* let you express the composition as one statement:
+```cpp
+auto doubleAndToString = makePipe(doubleFn, toStringFn);
+
+std::string result1 = doubleAndToString(5);
+std::string result2 = doubleAndToString(6);
+
+```
+
 ## Why *funkypipes*?
 
 ### UNIX proved right
