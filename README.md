@@ -6,7 +6,7 @@
 - **Heterogeneous data transformation pipelines**: The library enables building pipelines that transform multiple arguments of different types into results of different types based on user-provided callables that themselves transform multiple input types into multiple output types.
 - **Callables**: Refers to functions, function objects, lambdas also overloaded and generic ones.
 - **Composing in a tacit style**: Callables are composed into pipelines using the tools provided by the library without explicitly specifying the arguments. This style of programming is also known as point-free style, where the focus is on the composition of functions rather than the data they operate on.
----
+<BR>
 
 ## Why *funkypipes*?
 
@@ -42,7 +42,7 @@ C++20 introduced ranges, which allow declarative transformations on homogeneous 
 
 -> *funkypipes* complements ranges by enabling function composition beyond sequences.
 
----
+<BR>
 
 ## General Features
 
@@ -52,7 +52,8 @@ C++20 introduced ranges, which allow declarative transformations on homogeneous 
 - **Error Handling**: The implementation is exception-safe. Exceptions thrown by any callable of in the pipe are propagated to the pipe's caller.
 - **Callable Signatures**: Callables having multiple parameters and tuple return values are supported. In general `const` and non-`const` lvalue references and rvalue references for arguments and return values are supported.
 - **Move Semantics and Perfect Forwarding**: The implementation fully supports move semantics for callables and their arguments where semantically meaningful.
----
+<BR>
+
 ## Tools and their specific features
 
 ### **makePipe**
@@ -327,7 +328,8 @@ ASSERT_EQ(appendDateTime("de_DE: "s, Locale::de_DE), "de_DE: 15.09.1959 00:01"s)
 ### **more to come**
 See the [Roadmap](https://github.com/mahush/funkypipes/blob/main/docs/roadmap.md)
 
----
+<BR>
+
 ## Project Directory Structure
 
 ```
