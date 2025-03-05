@@ -10,6 +10,7 @@
 #define FUNKYPIPES_AT_HPP
 
 #include <cstddef>
+#include <ostream>
 #include <tuple>
 #include <type_traits>
 #include <utility>
@@ -21,6 +22,12 @@
 #include "funkypipes/details/tuple/separate_tuple_elements.hpp"
 #include "funkypipes/details/tuple/try_flatten_tuple.hpp"
 #include "funkypipes/details/tuple/tuple_indices_of.hpp"
+
+#ifdef ENABLE_COVERAGE
+#define PREVENT_CONSTANT_FOLDING() asm volatile("" ::: "memory")
+#else
+#define PREVENT_CONSTANT_FOLDING() ((void)0)  // No-op in non-coverage builds
+#endif
 
 namespace funkypipes {
 
@@ -62,7 +69,11 @@ template <std::size_t... SelectedIdxs, typename TFn>
 auto at(TFn&& fn) {
   using ::funkypipes::impl::atImpl;
 
-  auto provideSelectedIdxsFn = [](const auto& /*argsTuple*/) { return std::index_sequence<SelectedIdxs...>{}; };
+  auto provideSelectedIdxsFn = [](const auto& /*argsTuple*/) {
+    PREVENT_CONSTANT_FOLDING();
+
+    return std::index_sequence<SelectedIdxs...>{};
+  };
 
   return atImpl(std::forward<TFn>(fn), std::move(provideSelectedIdxsFn));
 }
@@ -76,6 +87,8 @@ auto at(TFn&& fn) {
   using ::funkypipes::impl::atImpl;
 
   auto provideSelectedIdxsFn = [](const auto& argsTuple) {
+    PREVENT_CONSTANT_FOLDING();
+
     using ArgsTuple = std::decay_t<decltype(argsTuple)>;
 
     return indexSequenceCat(TupleIndicesOfAssertingSuccess<TFirstSelected, ArgsTuple>{},

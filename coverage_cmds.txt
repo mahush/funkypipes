@@ -1,0 +1,17 @@
+
+llvm-cov-16 show ./build/test_funkypipes -instr-profile=coverage.profdata -show-line-counts-or-regions -show-instantiation-summary -show-branches=count -ignore-filename-regex='(tests/|build/)' -format=html > coverage.html
+llvm-cov-16 report ./build/test_funkypipes -instr-profile=coverage.profdata -ignore-filename-regex='(tests/|build/)' include/funkypipes/details/make_funky_void_removing.hpp
+llvm-cov-16 show ./build/test_funkypipes -instr-profile=coverage.profdata -show-line-counts-or-regions -show-instantiation-summary -show-branches=count -ignore-filename-regex='(tests/|build/)' -format=html > coverage.html include/funkypipes/details/make_funky_void_removing.hpp
+LLVM_PROFILE_FILE="coverage.profraw" ./build/test_funkypipes --gtest_filter="*VoidReturning*"
+llvm-cov-16 show ./build/test_funkypipes -instr-profile=coverage.profdata -show-line-counts-or-regions -show-instantiation-summary -show-branches=count -ignore-filename-regex='(tests/|build/)' -format=html > coverage.html include/funkypipes/details/make_funky_void_returning.hpp
+llvm-cov-16 report ./build/test_funkypipes -instr-profile=coverage.profdata -ignore-filename-regex='(tests/|build/)' include/funkypipes/details/make_funky_void_returning.hpp
+c++filt --version
+cat coverage.html | c++filt > coverage2.html
+llvm-cov-16 show ./build/test_funkypipes -instr-profile=coverage.profdata -show-line-counts-or-regions -show-instantiation-summary -show-branches=count -ignore-filename-regex='(tests/|build/)' -format=text > coverage.txt
+cat coverage.txt | c++filt > coverage2.txt
+echo "_ZZN10funkypipes7details22makeFunkyVoidReturningIRZN72MakeFunkyVoidReturning_callableReturningVoid_calledWithLValue_works_Test8TestBodyEvE3$_0EEDaOT_ENUlDpOT_E_clIJRiEEEDcS9_" | c++filt
+llvm-cov-16 report ./build/test_funkypipes -instr-profile=coverage.profdata -ignore-filename-regex='(tests/|build/)'
+rm coverage.*
+LLVM_PROFILE_FILE="coverage.profraw" ./build/test_funkypipes 
+llvm-profdata-16 merge -sparse coverage.profraw -o coverage.profdata
+llvm-cov-16 show ./build/test_funkypipes -instr-profile=coverage.profdata -show-line-counts-or-regions -show-instantiation-summary -show-branches=count -ignore-filename-regex='(tests/|build/)' -format=html > coverage.html 

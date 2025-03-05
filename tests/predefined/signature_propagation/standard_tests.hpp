@@ -16,6 +16,12 @@
 
 #include "utils/move_only_struct.hpp"
 
+#ifdef ENABLE_COVERAGE
+#define PREVENT_CONSTANT_FOLDING() asm volatile("" ::: "memory")
+#else
+#define PREVENT_CONSTANT_FOLDING() ((void)0)  // No-op in non-coverage builds
+#endif
+
 namespace funkypipes::test::signature_propagation {
 
 // feature: callables - move only
@@ -29,7 +35,10 @@ void nonCopyableCallable_called_works(TFn decorating_fn) {
     NonCopyableFn& operator=(const NonCopyableFn&) = delete;
     NonCopyableFn& operator=(NonCopyableFn&&) = delete;
 
-    int operator()(int value) const { return value; }
+    int operator()(int value) const {
+      PREVENT_CONSTANT_FOLDING();
+      return value;
+    }
   };
 
   auto decorated_fn = decorating_fn(NonCopyableFn{});
@@ -37,6 +46,11 @@ void nonCopyableCallable_called_works(TFn decorating_fn) {
   int argument{1};
   int result = decorated_fn(argument);
   EXPECT_EQ(result, 1);
+
+  // auto decorated_fn2 = decorating_fn([](int) { PREVENT_CONSTANT_FOLDING(); });
+
+  // int argument2{1};
+  // decorated_fn2(argument2);
 }
 
 // feature: data - value categories
