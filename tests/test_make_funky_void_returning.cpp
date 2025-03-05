@@ -14,6 +14,12 @@
 #include "funkypipes/funky_void.hpp"
 #include "predefined/signature_propagation/standard_tests.hpp"
 
+#ifdef ENABLE_COVERAGE
+#define PREVENT_CONSTANT_FOLDING() asm volatile("" ::: "memory")
+#else
+#define PREVENT_CONSTANT_FOLDING() ((void)0)  // No-op in non-coverage builds
+#endif
+
 using namespace funkypipes;
 using namespace funkypipes::details;
 using namespace funkypipes::test;
@@ -27,7 +33,7 @@ TEST(MakeFunkyVoidReturning, nonCopyableCallable_called_works) {
 
 // feature data: value category
 TEST(MakeFunkyVoidReturning, callableReturningVoid_calledWithLValue_works) {
-  auto lambda = [](int) {};
+  auto lambda = [](int) { PREVENT_CONSTANT_FOLDING(); };
 
   auto decorated_lambda = makeFunkyVoidReturning(lambda);
 
@@ -88,7 +94,7 @@ TEST(MakeFunkyVoidReturning, callableReturningValue_calledWithMultipleArguments_
 }
 
 TEST(MakeFunkyVoidReturning, callableReturningVoid_calledWithoutArguments_works) {
-  auto lambda = []() {};
+  auto lambda = []() { PREVENT_CONSTANT_FOLDING(); };
   auto decorated_lambda = makeFunkyVoidReturning(lambda);
 
   FunkyVoid result = decorated_lambda();
