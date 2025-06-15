@@ -53,8 +53,9 @@ add_executable(test_funkypipes examples/readme_examples.cpp
                                tests/test_make_tuple_packing.cpp
                                tests/test_make_tuple_returning.cpp
                                tests/test_make_tuple_unpacking.cpp
+                               tests/test_state_store.cpp
                                tests/test_traits.cpp)
-target_link_libraries(test_funkypipes PRIVATE gtest_main)
+target_link_libraries(test_funkypipes PRIVATE gtest_main gmock_main)
 target_include_directories(test_funkypipes PRIVATE
     ${PROJECT_SOURCE_DIR}/include
     ${PROJECT_SOURCE_DIR}/tests

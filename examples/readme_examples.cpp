@@ -1,5 +1,8 @@
 #include <gtest/gtest.h>
 
+#include <deque>
+#include <numeric>
+#include <sstream>
 #include <string>
 #include <tuple>
 
@@ -10,6 +13,7 @@
 #include "funkypipes/make_callable.hpp"
 #include "funkypipes/make_pipe.hpp"
 #include "funkypipes/pass_along.hpp"
+#include "funkypipes/state_store.hpp"
 
 using namespace funkypipes;
 using namespace std::string_literals;
@@ -175,4 +179,71 @@ TEST(ReadmeExamples, pass_along_by_type) {
 
   ASSERT_EQ(appendDateTime("en_US: "s, Locale::en_US), "en_US: 9/15/1959 12:01 AM"s);
   ASSERT_EQ(appendDateTime("de_DE: "s, Locale::de_DE), "de_DE: 15.09.1959 00:01"s);
+}
+
+TEST(ReadmeExamples, state_store_basic) {
+  // The store has an initial value
+  StateStore<int> store{10};
+
+  // Update function: takes the current state and returns the next state
+  auto pureIncrementFn = [](int state) { return state + 1; };
+
+  // Apply an update
+  store.apply("increment", pureIncrementFn);
+
+  // Read the current state
+  ASSERT_EQ(store.get_state(), 11);
+}
+
+TEST(ReadmeExamples, state_store_bind_and_subscribe) {
+  // The store has a subscription function assigned
+  std::string lastOutput;
+  auto outputStateChangeFn = [&lastOutput](std::string updateName, int oldState, int newState) {
+    std::ostringstream output;
+    output << updateName << " changed " << oldState << " to " << newState;
+    lastOutput = output.str();
+  };
+  StateStore<int> store{outputStateChangeFn};
+
+  // A callable is created that binds a pure update function to the store
+  auto pureIncrementFn = [](int state) { return state + 1; };
+  auto statefulIncrementFn = store.bind("increment", pureIncrementFn);
+
+  // Calling the callable updates the state and invokes the subscription function
+  statefulIncrementFn();
+  ASSERT_EQ(store.get_state(), 1);
+  ASSERT_EQ(lastOutput, "increment changed 0 to 1");
+}
+
+TEST(ReadmeExamples, state_store_moving_average) {
+  struct MovingAverageState {
+    std::deque<double> window;
+    size_t targetWindowSize;
+  };
+
+  auto addSampleFn = [](MovingAverageState state, double sample) {
+    state.window.push_back(sample);
+    if (state.window.size() > state.targetWindowSize) {
+      state.window.pop_front();
+    }
+    return state;
+  };
+
+  auto computeAverageFn = [](const MovingAverageState& state) {
+    if (state.window.empty()) {
+      return 0.0;
+    }
+    const double sum = std::accumulate(state.window.begin(), state.window.end(), 0.0);
+    return sum / state.window.size();
+  };
+
+  MovingAverageState initial{{}, 3};
+  StateStore<MovingAverageState> store{initial};
+
+  auto addSampleAndGetAverageFn = store.bind("addSampleAndGetAverage", addSampleFn, computeAverageFn);
+
+  ASSERT_EQ(addSampleAndGetAverageFn(10.0), 10.0);
+  ASSERT_EQ(addSampleAndGetAverageFn(20.0), 15.0);
+  ASSERT_EQ(addSampleAndGetAverageFn(30.0), 20.0);
+  ASSERT_EQ(addSampleAndGetAverageFn(40.0), 30.0);
 }
