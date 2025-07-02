@@ -5,6 +5,7 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 project(funkypipes LANGUAGES CXX)
 
+install(DIRECTORY include/ DESTINATION include)
 
 message(STATUS "C++ Compiler: ${CMAKE_CXX_COMPILER}")
 message(STATUS "C++ Compiler Version: ${CMAKE_CXX_COMPILER_VERSION}")
