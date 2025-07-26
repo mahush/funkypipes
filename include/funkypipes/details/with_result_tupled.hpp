@@ -6,9 +6,10 @@
 // Official repository: https://github/mahush/funkypipes
 //
 
-#ifndef FUNKYPIPES_DETAILS_MAKE_TUPLE_RETURNING_HPP
-#define FUNKYPIPES_DETAILS_MAKE_TUPLE_RETURNING_HPP
+#ifndef FUNKYPIPES_DETAILS_WITH_RESULT_TUPLED_HPP
+#define FUNKYPIPES_DETAILS_WITH_RESULT_TUPLED_HPP
 
+#include <cstdio>
 #include <tuple>
 #include <type_traits>
 #include <utility>
@@ -19,7 +20,7 @@ namespace funkypipes::details {
 
 // Helper template function that decorates a given function by wrapping its return type with std::tuple.
 template <typename TFn>
-auto makeTupleReturning(TFn&& fn) {
+auto withResultTupled(TFn&& fn) {
   using funkypipes::details::IsTuple;
 
   return [fn_ = std::forward<TFn>(fn)](auto&&... args) mutable -> decltype(auto) {
@@ -30,10 +31,11 @@ auto makeTupleReturning(TFn&& fn) {
     } else if constexpr (IsTuple<ResultType>) {
       return fn_(std::forward<decltype(args)>(args)...);
     } else {
-      // Note: References are preserved
       if constexpr (std::is_reference_v<ResultType>) {
+        // Note: A returned reference wrapped in a tuple
         return std::forward_as_tuple(fn_(std::forward<decltype(args)>(args)...));
       } else {
+        // Note: A returned temporary is moved/copied into the tuple
         return std::make_tuple(fn_(std::forward<decltype(args)>(args)...));
       }
     }
@@ -42,4 +44,4 @@ auto makeTupleReturning(TFn&& fn) {
 
 }  // namespace funkypipes::details
 
-#endif  // FUNKYPIPES_DETAILS_MAKE_TUPLE_RETURNING_HPP
+#endif  // FUNKYPIPES_DETAILS_WITH_RESULT_TUPLED_HPP

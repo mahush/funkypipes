@@ -9,15 +9,14 @@
 #ifndef FUNKYPIPES_FORK_HPP
 #define FUNKYPIPES_FORK_HPP
 
-#include <functional>
 #include <tuple>
 #include <utility>
 
 #include "funkypipes/details/make_signature_checking.hpp"
-#include "funkypipes/details/make_tuple_returning.hpp"
 #include "funkypipes/details/tuple/separate_tuple_elements.hpp"
 #include "funkypipes/details/tuple/try_flatten_tuple.hpp"
 #include "funkypipes/details/tuple/tuple_indices_of.hpp"
+#include "funkypipes/details/with_result_tupled.hpp"
 #include "funkypipes/funky_void.hpp"
 
 namespace funkypipes {
@@ -28,7 +27,7 @@ template <typename... TFns>
 auto fork(TFns&&... fns) {
   namespace fpd = ::funkypipes::details;
 
-  return [fnsTuple = std::make_tuple(fpd::makeTupleReturning(fpd::makeSignatureChecking(std::forward<TFns>(fns)))...)](
+  return [fnsTuple = std::make_tuple(fpd::withResultTupled(fpd::makeSignatureChecking(std::forward<TFns>(fns)))...)](
              auto&&... args) mutable -> decltype(auto) {
     return std::apply(
         [&](auto&&... fns) -> decltype(auto) {

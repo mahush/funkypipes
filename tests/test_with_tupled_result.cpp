@@ -1,3 +1,4 @@
+
 //
 // Copyright (c) 2025 mahush (info@mahush.de)
 //
@@ -9,20 +10,19 @@
 #include <gtest/gtest.h>
 
 #include <tuple>
-#include <type_traits>
 #include <utility>
 
-#include "funkypipes/details/make_tuple_returning.hpp"
+#include "funkypipes/details/with_result_tupled.hpp"
 #include "utils/move_only_struct.hpp"
 
-using funkypipes::details::makeTupleReturning;
+using funkypipes::details::withResultTupled;
 
 // feature: data - void return type
 // Ensure that void returning callables are supported
-TEST(MakeTupleReturning, callableReturningVoid_called_returnsEmptyTuple) {
+TEST(WithTupledResult, callableReturningVoid_called_returnsEmptyTuple) {
   // given
   auto lambda = [](int) {};
-  auto tupleReturningFn = makeTupleReturning(lambda);
+  auto tupleReturningFn = withResultTupled(lambda);
 
   // when
   decltype(auto) result = tupleReturningFn(0);
@@ -32,10 +32,10 @@ TEST(MakeTupleReturning, callableReturningVoid_called_returnsEmptyTuple) {
 }
 
 // Ensure that value returning callables are supported
-TEST(MakeTupleReturning, callableReturningValue_called_returnsTuple) {
+TEST(WithTupledResult, callableReturningValue_called_returnsTuple) {
   // given
   auto lambda = []() { return 1; };
-  auto tupleReturningFn = makeTupleReturning(lambda);
+  auto tupleReturningFn = withResultTupled(lambda);
 
   // when
   decltype(auto) result = tupleReturningFn();
@@ -47,10 +47,10 @@ TEST(MakeTupleReturning, callableReturningValue_called_returnsTuple) {
 
 // feature: data - value categories
 // Ensure that lvalue reference returning callables are supported
-TEST(MakeTupleReturning, callableReturningLValueReference_called_referenceIsPreserved) {
+TEST(WithTupledResult, callableReturningLValueReference_called_referenceIsPreserved) {
   // given
   auto lambda = [](int& arg) -> int& { return arg; };
-  auto tupleReturningFn = makeTupleReturning(lambda);
+  auto tupleReturningFn = withResultTupled(lambda);
 
   // when
   int argument{1};
@@ -65,10 +65,10 @@ TEST(MakeTupleReturning, callableReturningLValueReference_called_referenceIsPres
 
 // feature: data - value categories
 // Ensure that const lvalue reference returning callables are supported
-TEST(MakeTupleReturning, callableReturningConstLValueReference_called_referenceIsPreserved) {
+TEST(WithTupledResult, callableReturningConstLValueReference_called_referenceIsPreserved) {
   // given
   auto lambda = [](const int& arg) -> const int& { return arg; };
-  auto tupleReturningFn = makeTupleReturning(lambda);
+  auto tupleReturningFn = withResultTupled(lambda);
 
   // when
   int argument{1};
@@ -83,10 +83,10 @@ TEST(MakeTupleReturning, callableReturningConstLValueReference_called_referenceI
 
 // feature: data - value categories
 // Ensure that rvalue reference returning callables are supported
-TEST(MakeTupleReturning, callableReturningRValueReference_called_referenceIsPreserved) {
+TEST(WithTupledResult, callableReturningRValueReference_called_referenceIsPreserved) {
   // given
   auto lambda = [](int&& arg) -> int&& { return std::move(arg); };
-  auto tupleReturningFn = makeTupleReturning(lambda);
+  auto tupleReturningFn = withResultTupled(lambda);
 
   // when
   int argument{1};  // Note: object to move from must still exist when accessing result
@@ -101,10 +101,10 @@ TEST(MakeTupleReturning, callableReturningRValueReference_called_referenceIsPres
 }
 
 // Ensure that tuple returning callables are supported
-TEST(MakeTupleReturning, callableReturningTuple_called_returnsTuple) {
+TEST(WithTupledResult, callableReturningTuple_called_returnsTuple) {
   // given
   auto lambda = []() { return std::make_tuple(1, std::string{"two"}); };
-  auto tupleReturningFn = makeTupleReturning(lambda);
+  auto tupleReturningFn = withResultTupled(lambda);
 
   // when
   decltype(auto) result = tupleReturningFn();
@@ -117,7 +117,7 @@ TEST(MakeTupleReturning, callableReturningTuple_called_returnsTuple) {
 
 // feature callables: move only
 // Ensure that a move-only callable can be wrapped
-TEST(MakeTupleReturning, nonCopyableCallable_called_works) {
+TEST(WithTupledResult, nonCopyableCallable_called_works) {
   // given
   struct NonCopyableFn {
     NonCopyableFn() = default;
@@ -129,7 +129,7 @@ TEST(MakeTupleReturning, nonCopyableCallable_called_works) {
 
     int operator()(int value) const { return value; }
   };
-  auto tupleReturningFn = makeTupleReturning(NonCopyableFn{});
+  auto tupleReturningFn = withResultTupled(NonCopyableFn{});
 
   // when
   std::tuple<int> result = tupleReturningFn(1);
@@ -140,10 +140,10 @@ TEST(MakeTupleReturning, nonCopyableCallable_called_works) {
 
 // feature data: move only
 // Ensure that a non copyable argument can get passed through
-TEST(MakeTupleReturning, callable_calledWithNonCopyableValue_NonCopyValueReturned) {
+TEST(WithTupledResult, callable_calledWithNonCopyableValue_NonCopyValueReturned) {
   // given
   auto lambda = [](MoveOnlyStruct arg) { return arg; };
-  auto tupleReturningFn = makeTupleReturning(lambda);
+  auto tupleReturningFn = withResultTupled(lambda);
 
   // when
   MoveOnlyStruct argument{1};
@@ -155,10 +155,10 @@ TEST(MakeTupleReturning, callable_calledWithNonCopyableValue_NonCopyValueReturne
 
 // feature data: any number of arguments
 // Ensure that zero arguments are supported
-TEST(MakeTupleReturning, callableReturningValue_calledWithoutArguments_works) {
+TEST(WithTupledResult, callableReturningValue_calledWithoutArguments_works) {
   // given
   auto lambda = []() { return "result"; };
-  auto tupleReturningFn = makeTupleReturning(lambda);
+  auto tupleReturningFn = withResultTupled(lambda);
 
   // when
   std::tuple<std::string> result = tupleReturningFn();
@@ -169,10 +169,10 @@ TEST(MakeTupleReturning, callableReturningValue_calledWithoutArguments_works) {
 
 // feature data: any number of arguments
 // Ensure that multiple arguments are supported
-TEST(MakeTupleReturning, callableReturningValue_calledWithMultipleArguments_works) {
+TEST(WithTupledResult, callableReturningValue_calledWithMultipleArguments_works) {
   // given
   auto lambda = [](int arg1, int arg2) -> int { return arg1 + arg2; };
-  auto tupleReturningFn = makeTupleReturning(lambda);
+  auto tupleReturningFn = withResultTupled(lambda);
 
   // when
   std::tuple<int> result = tupleReturningFn(1, 2);

@@ -16,12 +16,12 @@
 #include <utility>
 
 #include "funkypipes/details/make_signature_checking.hpp"
-#include "funkypipes/details/make_tuple_returning.hpp"
 #include "funkypipes/details/tuple/index_sequence.hpp"
 #include "funkypipes/details/tuple/resolve_rvalue_references.hpp"
 #include "funkypipes/details/tuple/separate_tuple_elements.hpp"
 #include "funkypipes/details/tuple/try_flatten_tuple.hpp"
 #include "funkypipes/details/tuple/tuple_indices_of.hpp"
+#include "funkypipes/details/with_result_tupled.hpp"
 
 namespace funkypipes {
 
@@ -31,7 +31,7 @@ template <typename TFn, typename TProvidePassAlongArgsFn>
 auto passAlongImpl(TFn&& fn, TProvidePassAlongArgsFn providePassAlongArgsFn) {
   namespace fpd = ::funkypipes::details;
 
-  return [tupleReturningFn_ = fpd::makeTupleReturning(fpd::makeSignatureChecking(std::forward<TFn>(fn))),
+  return [tupleReturningFn_ = fpd::withResultTupled(fpd::makeSignatureChecking(std::forward<TFn>(fn))),
           providePassAlongArgsFn_ = std::move(providePassAlongArgsFn)](auto&&... args) mutable -> decltype(auto) {
     auto argsTuple = fpd::resolveRValueReferences(
         std::forward_as_tuple(std::forward<decltype(args)>(args)...));  // Note: lvalue references are preserved

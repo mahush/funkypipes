@@ -15,12 +15,12 @@
 #include <utility>
 
 #include "funkypipes/details/make_signature_checking.hpp"
-#include "funkypipes/details/make_tuple_returning.hpp"
 #include "funkypipes/details/tuple/index_sequence.hpp"
 #include "funkypipes/details/tuple/resolve_rvalue_references.hpp"
 #include "funkypipes/details/tuple/separate_tuple_elements.hpp"
 #include "funkypipes/details/tuple/try_flatten_tuple.hpp"
 #include "funkypipes/details/tuple/tuple_indices_of.hpp"
+#include "funkypipes/details/with_result_tupled.hpp"
 
 namespace funkypipes {
 
@@ -31,12 +31,12 @@ namespace impl {
 template <typename TFn, typename TProvideSelectedIdxsFn>
 auto atImpl(TFn&& fn, TProvideSelectedIdxsFn provideSelectedIdxsFn) {
   using ::funkypipes::details::makeSignatureChecking;
-  using ::funkypipes::details::makeTupleReturning;
   using ::funkypipes::details::resolveRValueReferences;
   using ::funkypipes::details::separateTupleElements;
   using ::funkypipes::details::tryFlattenTuple;
+  using ::funkypipes::details::withResultTupled;
 
-  return [tupleReturningFn_ = makeTupleReturning(makeSignatureChecking(std::forward<TFn>(fn))),
+  return [tupleReturningFn_ = withResultTupled(makeSignatureChecking(std::forward<TFn>(fn))),
           provideSelectedIdxsFn_ = std::move(provideSelectedIdxsFn)](auto&&... args) mutable -> decltype(auto) {
     auto argsTuple{std::forward_as_tuple(std::forward<decltype(args)>(args)...)};
 
