@@ -15,8 +15,8 @@
 #include "funkypipes/details/make_raw_pipe.hpp"
 #include "funkypipes/details/make_signature_checking.hpp"
 #include "funkypipes/details/make_tuple_packing.hpp"
-#include "funkypipes/details/make_tuple_unpacking.hpp"
 #include "funkypipes/details/traits.hpp"
+#include "funkypipes/details/with_tuple_arg_unpacked.hpp"
 
 namespace funkypipes {
 // Function template that creates a pipe out of the given callables.
@@ -39,7 +39,7 @@ template <typename... TFns>
 auto makeAutoPipe(TFns&&... fns) {
   using namespace details;
   return makeTuplePacking(makeFunkyVoidRemoving(makeRawPipe(makePossiblySkippable(
-      makeFunkyVoidReturning(makeTupleUnpacking(makeSignatureChecking(std::forward<TFns>(fns)))))...)));
+      makeFunkyVoidReturning(withTupleArgUnpacked(makeSignatureChecking(std::forward<TFns>(fns)))))...)));
 }
 
 }  // namespace funkypipes

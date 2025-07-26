@@ -8,45 +8,45 @@
 
 #include <gtest/gtest.h>
 
-#include "funkypipes/details/make_tuple_unpacking.hpp"
+#include "funkypipes/details/with_tuple_arg_unpacked.hpp"
 
 using namespace funkypipes;
 using namespace funkypipes::details;
 
-TEST(MakeTupleUnpacking, callable_accecpting_int__called_with_tuple_of_int__works) {
+TEST(WithTupleArgUnpacked, callable_accecpting_int__called_with_tuple_of_int__works) {
   auto lambda = [](int value) { return std::to_string(value); };
 
-  auto unpacking_lambda = makeTupleUnpacking(lambda);
+  auto unpacking_lambda = withTupleArgUnpacked(lambda);
 
   std::tuple<int> argument{1};
   std::string res = unpacking_lambda(std::move(argument));
   EXPECT_EQ(res, "1");
 }
 
-TEST(MakeTupleUnpacking, callable_accecpting_int_and_string__called_with_tuple_of_int_and_string__works) {
+TEST(WithTupleArgUnpacked, callable_accecpting_int_and_string__called_with_tuple_of_int_and_string__works) {
   auto lambda = [](int value, std::string string) { return std::to_string(value) + string; };
 
-  auto unpacking_lambda = makeTupleUnpacking(lambda);
+  auto unpacking_lambda = withTupleArgUnpacked(lambda);
 
   auto argument = std::make_tuple<int, std::string>(1, "2");
   std::string res = unpacking_lambda(std::move(argument));
   EXPECT_EQ(res, "12");
 }
 
-TEST(MakeTupleUnpacking, callable_accepting_int__called_with_int__works) {
+TEST(WithTupleArgUnpacked, callable_accepting_int__called_with_int__works) {
   auto lambda = [](int value) { return value; };
 
-  auto unpacking_lambda = makeTupleUnpacking(lambda);
+  auto unpacking_lambda = withTupleArgUnpacked(lambda);
 
   int argument{0};
   int res = unpacking_lambda(std::move(argument));
   EXPECT_EQ(res, 0);
 }
 
-TEST(MakeTupleUnpacking, callable_without_parameter__called_with_empty_tuple__works) {
+TEST(WithTupleArgUnpacked, callable_without_parameter__called_with_empty_tuple__works) {
   auto lambda = []() { return true; };
 
-  auto unpacking_lambda = makeTupleUnpacking(lambda);
+  auto unpacking_lambda = withTupleArgUnpacked(lambda);
 
   std::tuple<> empty_tuple;
   std::optional<bool> res = unpacking_lambda(std::move(empty_tuple));
@@ -54,10 +54,10 @@ TEST(MakeTupleUnpacking, callable_without_parameter__called_with_empty_tuple__wo
   EXPECT_EQ(res.value(), true);
 }
 
-TEST(MakeTupleUnpacking, callable_accepting_const_reference__called_with_const_reference__works) {
+TEST(WithTupleArgUnpacked, callable_accepting_const_reference__called_with_const_reference__works) {
   auto lambda = [](const int& value) -> const int& { return value; };
 
-  auto unpacking_lambda = makeTupleUnpacking(lambda);
+  auto unpacking_lambda = withTupleArgUnpacked(lambda);
 
   int argument{1};
   const int& result = unpacking_lambda(argument);
@@ -67,10 +67,10 @@ TEST(MakeTupleUnpacking, callable_accepting_const_reference__called_with_const_r
   ASSERT_EQ(result, 2);
 }
 
-TEST(MakeTupleUnpacking, callable_accepting_reference__called_with_reference__works) {
+TEST(WithTupleArgUnpacked, callable_accepting_reference__called_with_reference__works) {
   auto lambda = [](int& value) -> int& { return value; };
 
-  auto unpacking_lambda = makeTupleUnpacking(lambda);
+  auto unpacking_lambda = withTupleArgUnpacked(lambda);
 
   int argument{1};
   int& result = unpacking_lambda(argument);

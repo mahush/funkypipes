@@ -11,10 +11,10 @@
 #include <functional>
 #include <string>
 
-#include "funkypipes/details/make_tuple_unpacking.hpp"
 #include "funkypipes/details/tuple/separate_tuple_elements.hpp"
 #include "funkypipes/details/tuple/try_flatten_tuple.hpp"
 #include "funkypipes/details/tuple/tuple_traits.hpp"
+#include "funkypipes/details/with_tuple_arg_unpacked.hpp"
 
 namespace funkypipes {
 
@@ -120,7 +120,7 @@ auto StateStore<TState>::applyAndTransform(const UpdateName& updateName, const T
   namespace fpd = ::funkypipes::details;
 
   auto updateResult = applyForwardingUpdateResult(updateName, updateFn, std::forward<decltype(args)>(args)...);
-  auto tupleAwareTransformFn = fpd::makeTupleUnpacking(transformFn);
+  auto tupleAwareTransformFn = fpd::withTupleArgUnpacked(transformFn);
   return tupleAwareTransformFn(std::move(updateResult));
 }
 

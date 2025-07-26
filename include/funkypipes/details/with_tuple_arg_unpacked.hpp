@@ -41,7 +41,7 @@ class UnpackingFn {
 // Helper template function that transforms a given function into a one that can unpack tuple arguments. See
 // UnpackingFn for details.
 template <typename TFn>
-auto makeTupleUnpacking(TFn&& fn) {
+auto withTupleArgUnpacked(TFn&& fn) {
   return UnpackingFn<TFn>{std::forward<TFn>(fn)};
 }
 
