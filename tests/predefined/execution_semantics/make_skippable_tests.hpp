@@ -15,6 +15,7 @@
 
 #include "funkypipes/details/make_skippable.hpp"
 #include "funkypipes/details/traits.hpp"
+#include "utils/move_only_forwarding_fn.hpp"
 #include "utils/move_only_struct.hpp"
 
 namespace funkypipes::test::execution_semantics {
@@ -92,18 +93,7 @@ void overloadedFunctorCallable_calledWithValue_isExecuted(TFn makeSkippableFn) {
 // feature: callables - move only
 template <typename TFn>
 void nonCopyableCallable_calledWithValue_isExecuted(TFn makeSkippableFn) {
-  struct NonCopyableFn {
-    NonCopyableFn() = default;
-    ~NonCopyableFn() = default;
-    NonCopyableFn(const NonCopyableFn&) = delete;
-    NonCopyableFn(NonCopyableFn&&) = default;
-    NonCopyableFn& operator=(const NonCopyableFn&) = delete;
-    NonCopyableFn& operator=(NonCopyableFn&&) = delete;
-
-    int operator()(int value) const { return value; }
-  };
-
-  auto skippable_fn = makeSkippableFn(NonCopyableFn{});
+  auto skippable_fn = makeSkippableFn(MoveOnlyForwardingFn{});
 
   std::optional<int> argument{1};
   std::optional<int> res = skippable_fn(argument);

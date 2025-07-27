@@ -14,6 +14,7 @@
 #include <utility>
 
 #include "funkypipes/pass_along.hpp"
+#include "utils/move_only_forwarding_fn.hpp"
 #include "utils/move_only_struct.hpp"
 
 using funkypipes::passAlong;
@@ -77,21 +78,11 @@ TEST(PassAlong, consumingFnDecoratedByPassingAlong_calledWithSingleArgument_argu
 // Ensure that a move only callable is supported
 TEST(PassAlong, nonCopyableCallableDecorated_works) {
   // when
-  struct NonCopyableFn {
-    NonCopyableFn() = default;
-    ~NonCopyableFn() = default;
-    NonCopyableFn(const NonCopyableFn&) = delete;
-    NonCopyableFn(NonCopyableFn&&) = default;
-    NonCopyableFn& operator=(const NonCopyableFn&) = delete;
-    NonCopyableFn& operator=(NonCopyableFn&&) = delete;
-
-    void operator()(int) const {}
-  };
-  auto decoratedFn = passAlong<0>(NonCopyableFn{});
+  auto decoratedFn = passAlong<0>(MoveOnlyForwardingFn{});
 
   // then
   const auto result = decoratedFn(0);
-  ASSERT_EQ(result, 0);
+  ASSERT_EQ(result, std::make_tuple(0, 0));
 }
 
 // Ensure that tuples are returned by value

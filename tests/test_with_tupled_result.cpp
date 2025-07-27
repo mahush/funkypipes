@@ -13,6 +13,7 @@
 #include <utility>
 
 #include "funkypipes/details/with_result_tupled.hpp"
+#include "utils/move_only_forwarding_fn.hpp"
 #include "utils/move_only_struct.hpp"
 
 using funkypipes::details::withResultTupled;
@@ -119,17 +120,7 @@ TEST(WithTupledResult, callableReturningTuple_called_returnsTuple) {
 // Ensure that a move-only callable can be wrapped
 TEST(WithTupledResult, nonCopyableCallable_called_works) {
   // given
-  struct NonCopyableFn {
-    NonCopyableFn() = default;
-    ~NonCopyableFn() = default;
-    NonCopyableFn(const NonCopyableFn&) = delete;
-    NonCopyableFn(NonCopyableFn&&) = default;
-    NonCopyableFn& operator=(const NonCopyableFn&) = delete;
-    NonCopyableFn& operator=(NonCopyableFn&&) = delete;
-
-    int operator()(int value) const { return value; }
-  };
-  auto tupleReturningFn = withResultTupled(NonCopyableFn{});
+  auto tupleReturningFn = withResultTupled(MoveOnlyForwardingFn{});
 
   // when
   std::tuple<int> result = tupleReturningFn(1);

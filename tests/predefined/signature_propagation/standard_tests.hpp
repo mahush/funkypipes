@@ -14,6 +14,7 @@
 #include <string>
 #include <type_traits>
 
+#include "utils/move_only_forwarding_fn.hpp"
 #include "utils/move_only_struct.hpp"
 
 namespace funkypipes::test::signature_propagation {
@@ -21,18 +22,7 @@ namespace funkypipes::test::signature_propagation {
 // feature: callables - move only
 template <typename TFn>
 void nonCopyableCallable_called_works(TFn decorating_fn) {
-  struct NonCopyableFn {
-    NonCopyableFn() = default;
-    ~NonCopyableFn() = default;
-    NonCopyableFn(const NonCopyableFn&) = delete;
-    NonCopyableFn(NonCopyableFn&&) = default;
-    NonCopyableFn& operator=(const NonCopyableFn&) = delete;
-    NonCopyableFn& operator=(NonCopyableFn&&) = delete;
-
-    int operator()(int value) const { return value; }
-  };
-
-  auto decorated_fn = decorating_fn(NonCopyableFn{});
+  auto decorated_fn = decorating_fn(MoveOnlyForwardingFn{});
 
   int argument{1};
   int result = decorated_fn(argument);

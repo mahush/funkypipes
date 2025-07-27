@@ -18,6 +18,7 @@
 #include <type_traits>
 #include <utility>
 
+#include "utils/move_only_forwarding_fn.hpp"
 #include "utils/move_only_struct.hpp"
 
 namespace funkypipes::test::execution_semantics {
@@ -124,20 +125,8 @@ void overloadedFunctorsPipe_calledWithEachType_typeSpecificChainExecuted(TFn mak
 // feature: callables - move only
 template <typename TFn>
 void nonCopyableCallables_composed_works(TFn makePipeFn) {
-  // given
-  struct NonCopyableFn {
-    NonCopyableFn() = default;
-    ~NonCopyableFn() = default;
-    NonCopyableFn(const NonCopyableFn&) = delete;
-    NonCopyableFn(NonCopyableFn&&) = default;
-    NonCopyableFn& operator=(const NonCopyableFn&) = delete;
-    NonCopyableFn& operator=(NonCopyableFn&&) = delete;
-
-    int operator()(int value) const { return value; }
-  };
-
   // when
-  auto pipe = makePipeFn(NonCopyableFn{}, NonCopyableFn{}, NonCopyableFn{});
+  auto pipe = makePipeFn(MoveOnlyForwardingFn{}, MoveOnlyForwardingFn{}, MoveOnlyForwardingFn{});
 
   // then
   EXPECT_EQ(0, pipe(0));
