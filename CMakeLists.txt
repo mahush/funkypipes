@@ -58,7 +58,8 @@ if(FUNKYPIPES_BUILD_TESTS)
                                  tests/test_make_tuple_returning.cpp
                                  tests/test_make_tuple_unpacking.cpp
                                  tests/test_state_store.cpp
-                                 tests/test_traits.cpp)
+                                 tests/test_traits.cpp
+                                 tests/test_with_args_tupled.cpp)
   target_link_libraries(test_funkypipes PRIVATE gtest_main gmock_main)
   target_include_directories(test_funkypipes PRIVATE
       ${PROJECT_SOURCE_DIR}/include
