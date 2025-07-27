@@ -13,12 +13,15 @@
 #include <type_traits>
 #include <utility>
 
+#include "funkypipes/details/tuple/tuple_traits.hpp"
+
 namespace funkypipes::details {
 
 // This function returns void for empty tuples, the only element for single-element tuples, and the tuple itself
 // otherwise. It preserves references when returning a single element, and tuples are returned by value.
 template <typename TTuple>
 constexpr decltype(auto) tryFlattenTuple(TTuple&& tuple) {
+  static_assert(IsTuple<std::decay_t<TTuple>>, "A tuple argument is required");
   constexpr auto size = std::tuple_size_v<std::decay_t<TTuple>>;
   if constexpr (size == 0) {
     return;
