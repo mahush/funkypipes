@@ -61,8 +61,7 @@ class SkippableFn {
     // reference here, because in the case of skipping, a new std::nullopt optional rvalue needs to be returned. Thus
     // the signature of this function always returns a copy.
 
-    using FnArgumentType = typename OptionalUnwrapping<std::optional<TValue>>::Type;
-    using RawFnResult = std::invoke_result_t<TFn, FnArgumentType>;
+    using RawFnResult = std::invoke_result_t<TFn, TValue>;
 
     if constexpr (IsOptional<RawFnResult>::value) {
       if (optional_arg.has_value()) {
