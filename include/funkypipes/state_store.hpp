@@ -11,8 +11,8 @@
 #include <functional>
 #include <string>
 
+#include "funkypipes/details/tuple/collapse_or_forward_tuple.hpp"
 #include "funkypipes/details/tuple/separate_tuple_elements.hpp"
-#include "funkypipes/details/tuple/try_flatten_tuple.hpp"
 #include "funkypipes/details/tuple/tuple_traits.hpp"
 #include "funkypipes/details/with_tuple_arg_unpacked.hpp"
 
@@ -109,7 +109,7 @@ auto StateStore<TState>::apply(const UpdateName& updateName, const TStateUpdateF
   if constexpr (fpd::IsTuple<decltype(updateResult)>) {
     auto [_, outputTuple] = fpd::separateTupleElements<0>(std::move(updateResult));
 
-    return fpd::tryFlattenTuple(std::move(outputTuple));
+    return fpd::collapseOrForwardTuple(std::move(outputTuple));
   }
 }
 

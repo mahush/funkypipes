@@ -16,10 +16,10 @@
 #include <utility>
 
 #include "funkypipes/details/make_signature_checking.hpp"
+#include "funkypipes/details/tuple/collapse_or_forward_tuple.hpp"
 #include "funkypipes/details/tuple/index_sequence.hpp"
 #include "funkypipes/details/tuple/resolve_rvalue_references.hpp"
 #include "funkypipes/details/tuple/separate_tuple_elements.hpp"
-#include "funkypipes/details/tuple/try_flatten_tuple.hpp"
 #include "funkypipes/details/tuple/tuple_indices_of.hpp"
 #include "funkypipes/details/with_result_tupled.hpp"
 
@@ -42,7 +42,7 @@ auto passAlongImpl(TFn&& fn, TProvidePassAlongArgsFn providePassAlongArgsFn) {
 
     auto overallResultTuple = std::tuple_cat(std::move(fnResultTuple), std::move(passAlongArgsTuple));
 
-    return fpd::tryFlattenTuple(std::move(overallResultTuple));
+    return fpd::collapseOrForwardTuple(std::move(overallResultTuple));
   };
 }
 

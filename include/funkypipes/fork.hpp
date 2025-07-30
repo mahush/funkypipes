@@ -13,8 +13,8 @@
 #include <utility>
 
 #include "funkypipes/details/make_signature_checking.hpp"
+#include "funkypipes/details/tuple/collapse_or_forward_tuple.hpp"
 #include "funkypipes/details/tuple/separate_tuple_elements.hpp"
-#include "funkypipes/details/tuple/try_flatten_tuple.hpp"
 #include "funkypipes/details/tuple/tuple_indices_of.hpp"
 #include "funkypipes/details/with_result_tupled.hpp"
 #include "funkypipes/funky_void.hpp"
@@ -39,7 +39,7 @@ auto fork(TFns&&... fns) {
           auto [voidResults, nonVoidResults] =
               fpd::separateTupleElements(std::move(resultTuple), IndexSequencePointingToVoidEntries{});
 
-          return fpd::tryFlattenTuple(std::move(nonVoidResults));
+          return fpd::collapseOrForwardTuple(std::move(nonVoidResults));
         },
         fnsTuple);
   };

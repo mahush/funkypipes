@@ -12,18 +12,18 @@
 #include <type_traits>
 #include <utility>
 
-#include "funkypipes/details/tuple/try_flatten_tuple.hpp"
+#include "funkypipes/details/tuple/collapse_or_forward_tuple.hpp"
 #include "utils/move_only_struct.hpp"
 
-using funkypipes::details::tryFlattenTuple;
+using funkypipes::details::collapseOrForwardTuple;
 
 // Ensure that multiple elements tuple work
-TEST(TryFlattenTuple, tupleWithMultipleElements_tryFlattened_tupleReturnedUnchanged) {
+TEST(CollapseOrForwardTuple, tupleWithMultipleElements_tryFlattened_tupleReturnedUnchanged) {
   // given
   auto original = std::make_tuple(1, std::string{"two"});
 
   // when
-  auto modified = tryFlattenTuple(original);
+  auto modified = collapseOrForwardTuple(original);
 
   // then
   static_assert(std::is_same_v<decltype(modified), std::tuple<int, std::string>>);
@@ -31,37 +31,37 @@ TEST(TryFlattenTuple, tupleWithMultipleElements_tryFlattened_tupleReturnedUnchan
 }
 
 // Ensure that single element tuple work
-TEST(TryFlattenTuple, tupleWithSingleElement_tryFlattened_elementReturned) {
+TEST(CollapseOrForwardTuple, tupleWithSingleElement_tryFlattened_elementReturned) {
   // given
   auto original = std::make_tuple(1);
 
   // when
-  auto element = tryFlattenTuple(original);
+  auto element = collapseOrForwardTuple(original);
 
   // then
   EXPECT_EQ(element, 1);
 }
 
 // Ensure that zero element tuple work
-TEST(TryFlattenTuple, tupleWithZeroElement_tryFlattened_voidReturned) {
+TEST(CollapseOrForwardTuple, tupleWithZeroElement_tryFlattened_voidReturned) {
   // given
   auto original = std::make_tuple();
 
   // when
-  tryFlattenTuple(original);
+  collapseOrForwardTuple(original);
 
   // then
-  using ResultType = std::invoke_result_t<decltype(tryFlattenTuple<decltype(original)>), decltype(original)>;
+  using ResultType = std::invoke_result_t<decltype(collapseOrForwardTuple<decltype(original)>), decltype(original)>;
   static_assert(std::is_same_v<ResultType, void>);
 }
 
 // Ensure that a lvalue reference tuple is returned by value
-TEST(TryFlattenTuple, lvalueTupleWithMultipleElements_tryFlattened_tupleReturnedByValue) {
+TEST(CollapseOrForwardTuple, lvalueTupleWithMultipleElements_tryFlattened_tupleReturnedByValue) {
   // given
   auto original = std::make_tuple(0, 1);
 
   // when
-  decltype(auto) modified = tryFlattenTuple(original);
+  decltype(auto) modified = collapseOrForwardTuple(original);
 
   // then
   static_assert(std::is_same_v<decltype(modified), std::tuple<int, int>>);
@@ -70,12 +70,12 @@ TEST(TryFlattenTuple, lvalueTupleWithMultipleElements_tryFlattened_tupleReturned
 }
 
 // Ensure that a const lvalue reference tuple is returned by value
-TEST(TryFlattenTuple, constLValueTupleWithMultipleElements_tryFlattened_tupleReturnedByValue) {
+TEST(CollapseOrForwardTuple, constLValueTupleWithMultipleElements_tryFlattened_tupleReturnedByValue) {
   // given
   auto original = std::make_tuple(0, 1);
 
   // when
-  decltype(auto) modified = tryFlattenTuple(std::as_const(original));
+  decltype(auto) modified = collapseOrForwardTuple(std::as_const(original));
 
   // then
   static_assert(std::is_same_v<decltype(modified), std::tuple<int, int>>);
@@ -84,12 +84,12 @@ TEST(TryFlattenTuple, constLValueTupleWithMultipleElements_tryFlattened_tupleRet
 }
 
 // Ensure that a rvalue reference tuple is returned by value
-TEST(TryFlattenTuple, rvalueTupleWithMultipleElements_tryFlattened_tupleReturnedByValue) {
+TEST(CollapseOrForwardTuple, rvalueTupleWithMultipleElements_tryFlattened_tupleReturnedByValue) {
   // given
   auto original = std::make_tuple(0, 1);
 
   // when
-  decltype(auto) modified = tryFlattenTuple(std::move(original));
+  decltype(auto) modified = collapseOrForwardTuple(std::move(original));
 
   // then
   static_assert(std::is_same_v<decltype(modified), std::tuple<int, int>>);
@@ -98,12 +98,12 @@ TEST(TryFlattenTuple, rvalueTupleWithMultipleElements_tryFlattened_tupleReturned
 }
 
 // Ensure that a tuple with single value element leads to a value result
-TEST(TryFlattenTuple, lvalueTupleWithSingleElement_tryFlattened_elementReturnedByValue) {
+TEST(CollapseOrForwardTuple, lvalueTupleWithSingleElement_tryFlattened_elementReturnedByValue) {
   // given
   auto original = std::make_tuple(0);
 
   // when
-  decltype(auto) outputElement = tryFlattenTuple(original);
+  decltype(auto) outputElement = collapseOrForwardTuple(original);
 
   // then
   static_assert(std::is_same_v<decltype(outputElement), int>);
@@ -111,13 +111,13 @@ TEST(TryFlattenTuple, lvalueTupleWithSingleElement_tryFlattened_elementReturnedB
 }
 
 // Ensure that a tuple with single lvalue reference element leads to a lvalue reference result
-TEST(TryFlattenTuple, lvalueTupleWithSingleElement_tryFlattened_elementReturnedByLValueReference) {
+TEST(CollapseOrForwardTuple, lvalueTupleWithSingleElement_tryFlattened_elementReturnedByLValueReference) {
   // given
   MoveOnlyStruct inputElement{0};
   auto original = std::forward_as_tuple(inputElement);
 
   // when
-  decltype(auto) outputElement = tryFlattenTuple(original);
+  decltype(auto) outputElement = collapseOrForwardTuple(original);
 
   // then
   static_assert(std::is_same_v<decltype(outputElement), MoveOnlyStruct&>);
@@ -127,13 +127,13 @@ TEST(TryFlattenTuple, lvalueTupleWithSingleElement_tryFlattened_elementReturnedB
 }
 
 // Ensure that a tuple with single const lvalue reference element leads to a const lvalue reference result
-TEST(TryFlattenTuple, constLValueTupleWithSingleElement_tryFlattened_elementReturnedByConstLValueReference) {
+TEST(CollapseOrForwardTuple, constLValueTupleWithSingleElement_tryFlattened_elementReturnedByConstLValueReference) {
   // given
   MoveOnlyStruct inputElement{0};
   auto original = std::forward_as_tuple(std::as_const(inputElement));
 
   // when
-  decltype(auto) outputElement = tryFlattenTuple(original);
+  decltype(auto) outputElement = collapseOrForwardTuple(original);
 
   // then
   static_assert(std::is_same_v<decltype(outputElement), const MoveOnlyStruct&>);
@@ -143,7 +143,7 @@ TEST(TryFlattenTuple, constLValueTupleWithSingleElement_tryFlattened_elementRetu
 }
 
 // Ensure that a tuple with a single rvalue reference element leads to a rvalue reference result
-TEST(TryFlattenTuple, rvalueTupleWithRValueReferenceElement_tryFlattened_elementReturnedByRValueReference) {
+TEST(CollapseOrForwardTuple, rvalueTupleWithRValueReferenceElement_tryFlattened_elementReturnedByRValueReference) {
   // given
   // NOLINTNEXTLINE misc-const-correctness: is about to be moved
   MoveOnlyStruct inputElement{0};  // Note: The object to move from needs still to be available
@@ -151,7 +151,7 @@ TEST(TryFlattenTuple, rvalueTupleWithRValueReferenceElement_tryFlattened_element
   auto original = std::forward_as_tuple(std::move(inputElement));
 
   // when
-  decltype(auto) outputElement = tryFlattenTuple(std::move(original));
+  decltype(auto) outputElement = collapseOrForwardTuple(std::move(original));
 
   // then
   static_assert(std::is_same_v<decltype(outputElement), MoveOnlyStruct&&>);
@@ -159,12 +159,12 @@ TEST(TryFlattenTuple, rvalueTupleWithRValueReferenceElement_tryFlattened_element
 }
 
 // Ensure that a tuple with a single move only value element leads to returning the element by value
-TEST(TryFlattenTuple, rvalueTupleWithMoveOnlyElement_tryFlattened_moveOnlyElementReturned) {
+TEST(CollapseOrForwardTuple, rvalueTupleWithMoveOnlyElement_tryFlattened_moveOnlyElementReturned) {
   // given
   auto original = std::make_tuple(MoveOnlyStruct{0});
 
   // when
-  decltype(auto) outputElement = tryFlattenTuple(std::move(original));
+  decltype(auto) outputElement = collapseOrForwardTuple(std::move(original));
 
   // then
   static_assert(std::is_same_v<decltype(outputElement), MoveOnlyStruct>);

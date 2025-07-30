@@ -15,10 +15,10 @@
 #include <utility>
 
 #include "funkypipes/details/make_signature_checking.hpp"
+#include "funkypipes/details/tuple/collapse_or_forward_tuple.hpp"
 #include "funkypipes/details/tuple/index_sequence.hpp"
 #include "funkypipes/details/tuple/resolve_rvalue_references.hpp"
 #include "funkypipes/details/tuple/separate_tuple_elements.hpp"
-#include "funkypipes/details/tuple/try_flatten_tuple.hpp"
 #include "funkypipes/details/tuple/tuple_indices_of.hpp"
 #include "funkypipes/details/with_result_tupled.hpp"
 
@@ -30,10 +30,10 @@ namespace impl {
 // concatenation of the remaining arguments and the function's result.
 template <typename TFn, typename TProvideSelectedIdxsFn>
 auto atImpl(TFn&& fn, TProvideSelectedIdxsFn provideSelectedIdxsFn) {
+  using ::funkypipes::details::collapseOrForwardTuple;
   using ::funkypipes::details::makeSignatureChecking;
   using ::funkypipes::details::resolveRValueReferences;
   using ::funkypipes::details::separateTupleElements;
-  using ::funkypipes::details::tryFlattenTuple;
   using ::funkypipes::details::withResultTupled;
 
   return [tupleReturningFn_ = withResultTupled(makeSignatureChecking(std::forward<TFn>(fn))),
@@ -50,7 +50,7 @@ auto atImpl(TFn&& fn, TProvideSelectedIdxsFn provideSelectedIdxsFn) {
 
     auto overallResultTuple = std::tuple_cat(std::move(otherArgsTupleWithoutRValueRefs), std::move(fnResultTuple));
 
-    return tryFlattenTuple(std::move(overallResultTuple));
+    return collapseOrForwardTuple(std::move(overallResultTuple));
   };
 }
 

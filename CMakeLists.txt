@@ -36,7 +36,7 @@ if(FUNKYPIPES_BUILD_TESTS)
                                  tests/details/tuple/test_recreate_tuple_from_indices.cpp
                                  tests/details/tuple/test_resolve_rvalue_references.cpp
                                  tests/details/tuple/test_separate_tuple_elements.cpp
-                                 tests/details/tuple/test_try_flatten_tuple.cpp
+                                 tests/details/tuple/test_collapse_or_forward_tuple.cpp
                                  tests/details/tuple/test_tuple_indices_of.cpp
                                  tests/details/tuple/test_tuple_traits.cpp
                                  tests/test_and_then.cpp
