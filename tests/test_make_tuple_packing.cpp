@@ -124,6 +124,69 @@ TEST(MakeTuplePacking, callableAcceptingRValueInt_calledWithRValueInt_referenceI
             1);
 }
 
+// Ensure that multiple lvalue reference element gets forwarded as tuple while preserving element references
+TEST(MakeTuplePacking, callableAcceptingTupleOfLValueIntInt_calledWithLValueIntInt_referencesArePreserved) {
+  // given
+  auto lambda = [](std::tuple<int&, int&> arg) { return arg; };
+  auto packing_lambda = makeTuplePacking(lambda);
+
+  // when
+  int argument0{0};
+  int argument1{1};
+  decltype(auto) result = packing_lambda(argument0, argument1);
+
+  // then
+  static_assert(std::is_same_v<decltype(result), std::tuple<int&, int&>>);
+  EXPECT_EQ(result, std::make_tuple(0, 1));
+  std::get<0>(result)++;
+  std::get<1>(result)++;
+  EXPECT_EQ(argument0, 1);
+  EXPECT_EQ(argument1, 2);
+}
+
+// Ensure that multiple const lvalue reference element gets forwarded as tuple while preserving element references
+TEST(MakeTuplePacking, callableAcceptingTupleOfConstLValueIntInt_calledWithConstLValueIntInt_referencesArePreserved) {
+  // given
+  auto lambda = [](std::tuple<const int&, const int&> arg) { return arg; };
+  auto packing_lambda = makeTuplePacking(lambda);
+
+  // when
+  int argument0{0};
+  int argument1{1};
+  decltype(auto) result = packing_lambda(std::as_const(argument0), std::as_const(argument1));
+
+  // then
+  static_assert(std::is_same_v<decltype(result), std::tuple<const int&, const int&>>);
+  EXPECT_EQ(result, std::make_tuple(0, 1));
+  argument0++;
+  argument1++;
+  EXPECT_EQ(result, std::make_tuple(1, 2));
+}
+
+// Ensure that multiple rvalue reference element gets forwarded as tuple while preserving element references
+TEST(MakeTuplePacking, callableAcceptingTupleOfRValueIntInt_calledWithRValueIntInt_referencesArePreserved) {
+  // given
+  auto lambda = [](std::tuple<int&&, int&&> arg) { return arg; };
+  auto packing_lambda = makeTuplePacking(lambda);
+
+  // when
+  int argument0{0};                                    // NOLINT misc-const-correctness: is about to be moved
+  int argument1{1};                                    // NOLINT misc-const-correctness: is about to be moved
+  auto result = packing_lambda(std::move(argument0),   // NOLINT hicpp-move-const-arg,performance-move-const-arg
+                               std::move(argument1));  // NOLINT hicpp-move-const-arg,performance-move-const-arg
+
+  // then
+  static_assert(std::is_same_v<decltype(result), std::tuple<int&&, int&&>>);
+  EXPECT_EQ(result, std::make_tuple(0, 1));
+
+  std::get<0>(result)++;
+  std::get<1>(result)++;
+  EXPECT_EQ(argument0,  // NOLINT bugprone-use-after-move,hicpp-invalid-access-moved: actually no move has happend here
+            1);
+  EXPECT_EQ(argument1,  // NOLINT bugprone-use-after-move,hicpp-invalid-access-moved: actually no move has happend here
+            2);
+}
+
 // Ensure that returning by value is also supported
 TEST(MakeTuplePacking, callableReturningByValue_called_returnedByValue) {
   // given
