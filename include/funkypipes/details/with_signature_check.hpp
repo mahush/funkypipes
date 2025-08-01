@@ -6,8 +6,8 @@
 // Official repository: https://github/mahush/funkypipes
 //
 
-#ifndef FUNKYPIPES_DETAILS_MAKE_SIGNATURE_CHECKING_HPP
-#define FUNKYPIPES_DETAILS_MAKE_SIGNATURE_CHECKING_HPP
+#ifndef FUNKYPIPES_DETAILS_WITH_SIGNATURE_CHECK_HPP
+#define FUNKYPIPES_DETAILS_WITH_SIGNATURE_CHECK_HPP
 
 #include <type_traits>
 #include <utility>
@@ -28,7 +28,7 @@ struct AssertInvocability {
 //  - accepts given arguments
 //  - does not return void
 template <typename TFn>
-auto makeSignatureChecking(TFn&& fn) {
+auto withSignatureCheck(TFn&& fn) {
   return [fn = std::forward<TFn>(fn)](auto&&... args) mutable -> decltype(auto) {
     (void)AssertInvocability<TFn, decltype(args)...>{};  // Note: An unused instance is created to ensure that
                                                          // this template is evaluated before the next line.
@@ -38,4 +38,4 @@ auto makeSignatureChecking(TFn&& fn) {
 
 }  // namespace funkypipes::details
 
-#endif  // FUNKYPIPES_DETAILS_MAKE_SIGNATURE_CHECKING_HPP
+#endif  // FUNKYPIPES_DETAILS_WITH_SIGNATURE_CHECK_HPP

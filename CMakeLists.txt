@@ -50,7 +50,6 @@ if(FUNKYPIPES_BUILD_TESTS)
                                  tests/test_make_pipe.cpp
                                  tests/test_make_possibly_skippable.cpp
                                  tests/test_make_raw_pipe.cpp
-                                 tests/test_make_signature_checking.cpp
                                  tests/test_make_skippable.cpp
                                  tests/test_non_single_args_tupled.cpp
                                  tests/test_state_store.cpp
@@ -58,7 +57,8 @@ if(FUNKYPIPES_BUILD_TESTS)
                                  tests/test_with_empty_tuple_result_as_void.cpp
                                  tests/test_with_tuple_arg_unpacked.cpp
                                  tests/test_with_tupled_result.cpp
-                                 tests/test_with_void_result_as_empty_tuple.cpp)
+                                 tests/test_with_void_result_as_empty_tuple.cpp
+                                 tests/test_with_signature_check.cpp)
   target_link_libraries(test_funkypipes PRIVATE gtest_main gmock_main)
   target_include_directories(test_funkypipes PRIVATE
       ${PROJECT_SOURCE_DIR}/include

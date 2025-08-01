@@ -11,10 +11,10 @@
 
 #include "funkypipes/details/make_possibly_skippable.hpp"
 #include "funkypipes/details/make_raw_pipe.hpp"
-#include "funkypipes/details/make_signature_checking.hpp"
 #include "funkypipes/details/traits.hpp"
 #include "funkypipes/details/with_empty_tuple_result_as_void.hpp"
 #include "funkypipes/details/with_non_single_args_tupled.hpp"
+#include "funkypipes/details/with_signature_check.hpp"
 #include "funkypipes/details/with_tuple_arg_unpacked.hpp"
 #include "funkypipes/details/with_void_result_as_empty_tuple.hpp"
 
@@ -39,7 +39,7 @@ template <typename... TFns>
 auto makeAutoPipe(TFns&&... fns) {
   using namespace details;
   return withNonSingleArgsTupled(withEmptyTupleResultAsVoid(makeRawPipe(makePossiblySkippable(
-      withVoidResultAsEmptyTuple(withTupleArgUnpacked(makeSignatureChecking(std::forward<TFns>(fns)))))...)));
+      withVoidResultAsEmptyTuple(withTupleArgUnpacked(withSignatureCheck(std::forward<TFns>(fns)))))...)));
 }
 
 }  // namespace funkypipes
