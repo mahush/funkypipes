@@ -145,6 +145,19 @@ TEST(MakeTuplePacking, callableReturningByValue_called_returnedByValue) {
   EXPECT_EQ(result, 1);
 }
 
+// Ensure that packing a tuple out of zero arguments works
+TEST(MakeTuplePacking, callableAccecptingEmptyTuple_calledWithoutArgs_works) {
+  // given
+  auto lambda = [](std::tuple<>) { return "output"; };
+  auto packing_lambda = makeTuplePacking(lambda);
+
+  // when
+  const std::string result = packing_lambda();
+
+  // then
+  EXPECT_EQ(result, "output");
+}
+
 // Ensure that packing a tuple out of multiple arguments works
 TEST(MakeTuplePacking, callableAccecptingTupleOfIntAndString_calledWithIntAndString_works) {
   // given
