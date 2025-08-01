@@ -14,7 +14,7 @@
 #include "funkypipes/details/make_raw_pipe.hpp"
 #include "funkypipes/details/make_signature_checking.hpp"
 #include "funkypipes/details/make_skippable.hpp"
-#include "funkypipes/details/make_tuple_packing.hpp"
+#include "funkypipes/details/with_non_single_args_tupled.hpp"
 #include "funkypipes/details/with_tuple_arg_unpacked.hpp"
 
 namespace funkypipes {
@@ -22,7 +22,7 @@ namespace funkypipes {
 template <typename... TFns>
 auto makePipe(TFns&&... fns) {
   using namespace details;
-  return makeTuplePacking(makeFunkyVoidRemoving(
+  return withNonSingleArgsTupled(makeFunkyVoidRemoving(
       makeRawPipe(makeFunkyVoidReturning(withTupleArgUnpacked(makeSignatureChecking(std::forward<TFns>(fns))))...)));
 }
 

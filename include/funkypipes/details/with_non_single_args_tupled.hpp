@@ -6,8 +6,8 @@
 // Official repository: https://github/mahush/funkypipes
 //
 
-#ifndef FUNKYPIPES_DETAILS_MAKE_TUPLE_PACKING_HPP
-#define FUNKYPIPES_DETAILS_MAKE_TUPLE_PACKING_HPP
+#ifndef FUNKYPIPES_DETAILS_WITH_NON_SINGLE_ARGS_TUPLED_HPP
+#define FUNKYPIPES_DETAILS_WITH_NON_SINGLE_ARGS_TUPLED_HPP
 
 #include <cstddef>
 #include <tuple>
@@ -18,7 +18,7 @@ namespace funkypipes::details {
 // Helper template function that transforms a given function accepting a single argument into a one that can accept
 // multiple arguments by packing and forwarding them as tuple. Zero arguments are forwarded as empty tuple.
 template <typename TFn>
-auto makeTuplePacking(TFn&& fn) {
+auto withNonSingleArgsTupled(TFn&& fn) {
   return [fn_ = std::forward<TFn>(fn)](auto&&... args) mutable -> decltype(auto) {
     constexpr size_t args_count = sizeof...(args);
     if constexpr (args_count == 1) {
@@ -33,4 +33,4 @@ auto makeTuplePacking(TFn&& fn) {
 
 }  // namespace funkypipes::details
 
-#endif  // FUNKYPIPES_DETAILS_MAKE_TUPLE_PACKING_HPP
+#endif  // FUNKYPIPES_DETAILS_WITH_NON_SINGLE_ARGS_TUPLED_HPP

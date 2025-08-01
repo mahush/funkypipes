@@ -54,7 +54,7 @@ if(FUNKYPIPES_BUILD_TESTS)
                                  tests/test_make_raw_pipe.cpp
                                  tests/test_make_signature_checking.cpp
                                  tests/test_make_skippable.cpp
-                                 tests/test_make_tuple_packing.cpp
+                                 tests/test_non_single_args_tupled.cpp
                                  tests/test_state_store.cpp
                                  tests/test_traits.cpp
                                  tests/test_with_tuple_arg_unpacked.cpp
