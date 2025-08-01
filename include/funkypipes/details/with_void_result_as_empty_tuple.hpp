@@ -6,8 +6,8 @@
 // Official repository: https://github/mahush/funkypipes
 //
 
-#ifndef FUNKYPIPES_DETAILS_MAKE_FUNKY_VOID_RETURNING_HPP
-#define FUNKYPIPES_DETAILS_MAKE_FUNKY_VOID_RETURNING_HPP
+#ifndef FUNKYPIPES_DETAILS_WITH_VOID_RESULT_AS_EMPTY_TUPLE_HPP
+#define FUNKYPIPES_DETAILS_WITH_VOID_RESULT_AS_EMPTY_TUPLE_HPP
 
 #include <type_traits>
 #include <utility>
@@ -16,10 +16,10 @@
 
 namespace funkypipes::details {
 
-// Helper template function that decorates a given function by replacing a void return type with FunkyVoid.
-// Other return types remain unchanged.
+// Helper template function that decorates a given function by replacing a void return type with an empty tuple (aka
+// FunkyVoid). Other return types remain unchanged.
 template <typename TFn>
-auto makeFunkyVoidReturning(TFn&& fn) {
+auto withVoidResultAsEmptyTuple(TFn&& fn) {
   return [fn_ = std::forward<TFn>(fn)](auto&&... args) mutable -> decltype(auto) {
     using ResultType = typename std::invoke_result<TFn, decltype(args)...>::type;
     if constexpr (std::is_void_v<ResultType>) {
@@ -33,4 +33,4 @@ auto makeFunkyVoidReturning(TFn&& fn) {
 
 }  // namespace funkypipes::details
 
-#endif  // FUNKYPIPES_DETAILS_MAKE_FUNKY_VOID_RETURNING_HPP
+#endif  // FUNKYPIPES_DETAILS_WITH_VOID_RESULT_AS_EMPTY_TUPLE_HPP
