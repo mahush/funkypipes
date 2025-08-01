@@ -9,11 +9,11 @@
 #ifndef FUNKYPIPES_MAKE_AUTO_PIPE_HPP
 #define FUNKYPIPES_MAKE_AUTO_PIPE_HPP
 
-#include "funkypipes/details/make_funky_void_removing.hpp"
 #include "funkypipes/details/make_possibly_skippable.hpp"
 #include "funkypipes/details/make_raw_pipe.hpp"
 #include "funkypipes/details/make_signature_checking.hpp"
 #include "funkypipes/details/traits.hpp"
+#include "funkypipes/details/with_empty_tuple_result_as_void.hpp"
 #include "funkypipes/details/with_non_single_args_tupled.hpp"
 #include "funkypipes/details/with_tuple_arg_unpacked.hpp"
 #include "funkypipes/details/with_void_result_as_empty_tuple.hpp"
@@ -34,11 +34,11 @@ namespace funkypipes {
 //
 // On a detailed level, each callable is decorated to be "possibly skippable", "return void as empty tuple", "tuple
 // unpacking" and "signature checking", afterwards the callables are composes into a single callable chain using
-// makeRawPipe. Finally the pipe is decorated to be "tuple packing" and "funky void removing".
+// makeRawPipe. Finally the pipe is decorated to be "tuple packing" and "return empty tuple as void".
 template <typename... TFns>
 auto makeAutoPipe(TFns&&... fns) {
   using namespace details;
-  return withNonSingleArgsTupled(makeFunkyVoidRemoving(makeRawPipe(makePossiblySkippable(
+  return withNonSingleArgsTupled(withEmptyTupleResultAsVoid(makeRawPipe(makePossiblySkippable(
       withVoidResultAsEmptyTuple(withTupleArgUnpacked(makeSignatureChecking(std::forward<TFns>(fns)))))...)));
 }
 

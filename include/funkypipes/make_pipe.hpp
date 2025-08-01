@@ -9,10 +9,10 @@
 #ifndef FUNKYPIPES_MAKE_PIPE_HPP
 #define FUNKYPIPES_MAKE_PIPE_HPP
 
-#include "funkypipes/details/make_funky_void_removing.hpp"
 #include "funkypipes/details/make_raw_pipe.hpp"
 #include "funkypipes/details/make_signature_checking.hpp"
 #include "funkypipes/details/make_skippable.hpp"
+#include "funkypipes/details/with_empty_tuple_result_as_void.hpp"
 #include "funkypipes/details/with_non_single_args_tupled.hpp"
 #include "funkypipes/details/with_tuple_arg_unpacked.hpp"
 #include "funkypipes/details/with_void_result_as_empty_tuple.hpp"
@@ -22,7 +22,7 @@ namespace funkypipes {
 template <typename... TFns>
 auto makePipe(TFns&&... fns) {
   using namespace details;
-  return withNonSingleArgsTupled(makeFunkyVoidRemoving(makeRawPipe(
+  return withNonSingleArgsTupled(withEmptyTupleResultAsVoid(makeRawPipe(
       withVoidResultAsEmptyTuple(withTupleArgUnpacked(makeSignatureChecking(std::forward<TFns>(fns))))...)));
 }
 
