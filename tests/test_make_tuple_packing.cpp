@@ -3,12 +3,13 @@
 //
 // Distributed under MIT License
 //
-// Official repository: https://github/mahush/funkypipes
+// Official repository: https://github.com/mahush/funkypipes
 //
 
 #include <gtest/gtest.h>
 
 #include <string>
+#include <tuple>
 #include <type_traits>
 #include <utility>
 
@@ -36,7 +37,9 @@ TEST(MakeTuplePacking, callableAcceptingTuple_calledWithLValueTuple_referenceIsP
 // Ensure that a const lvalue reference tuple gets forwarded while preserving its reference
 TEST(MakeTuplePacking, callableAcceptingTuple_calledWithConstLValueTuple_referenceIsPreserved) {
   // given
-  auto lambda = [](const std::tuple<int>& arg) -> const std::tuple<int>& { return arg; };
+  auto lambda = [](const std::tuple<int>& arg) -> const std::tuple<int>& {
+    return arg;  // NOLINT: bugprone-return-const-ref-from-parameter: no temporary involved here
+  };
 
   auto packing_lambda = makeTuplePacking(lambda);
 
@@ -66,11 +69,11 @@ TEST(MakeTuplePacking, callableAcceptingTuple_calledWithRValueTuple_referenceIsP
   EXPECT_EQ(std::get<0>(result), 1);
 }
 
-// Ensure that a lvalue reference element gets forwarded as tuple while preserving element references
-TEST(MakeTuplePacking, callableAcceptingTupleOfInt_calledWithLValueInt_referenceIsPreserved) {
+// Ensure that a single lvalue reference element gets forwarded as is
+TEST(MakeTuplePacking, callableAcceptingLValueInt_calledWithLValueInt_referenceIsPreserved) {
   // given
-  auto lambda = [](std::tuple<int&> arg) -> int& { return std::get<0>(arg); };
-  auto packing_lambda = makeTuplePacking(lambda);
+  auto forwardFn = [](int& arg) -> int& { return arg; };
+  auto packing_lambda = makeTuplePacking(forwardFn);
 
   // when
   int argument{1};
@@ -83,11 +86,13 @@ TEST(MakeTuplePacking, callableAcceptingTupleOfInt_calledWithLValueInt_reference
   EXPECT_EQ(argument, 2);
 }
 
-// Ensure that a const lvalue reference element gets forwarded as tuple while preserving element references
-TEST(MakeTuplePacking, callableAcceptingTupleOfInt_calledWithConstLValueInt_referenceIsPreserved) {
+// Ensure that a single const lvalue reference element gets forwarded as is
+TEST(MakeTuplePacking, callableAcceptingConstLValueInt_calledWithConstLValueInt_referenceIsPreserved) {
   // given
-  auto lambda = [](std::tuple<const int&> arg) -> const int& { return std::get<0>(arg); };
-  auto packing_lambda = makeTuplePacking(lambda);
+  auto forwardFn = [](const int& arg) -> const int& {
+    return arg;  // NOLINT bugprone-return-const-ref-from-parameter: is intendet here
+  };
+  auto packing_lambda = makeTuplePacking(forwardFn);
 
   // when
   int argument{1};
@@ -100,45 +105,34 @@ TEST(MakeTuplePacking, callableAcceptingTupleOfInt_calledWithConstLValueInt_refe
   EXPECT_EQ(result, 2);
 }
 
-// Ensure that a rvalue reference element gets forwarded as tuple while preserving element references
-TEST(MakeTuplePacking, callableAcceptingTupleOfInt_calledWithRValueInt_referenceIsPreserved) {
-  //
+// Ensure that a single rvalue reference element gets forwarded as is
+TEST(MakeTuplePacking, callableAcceptingRValueInt_calledWithRValueInt_referenceIsPreserved) {
   // given
-  //
-  struct NonCopyableOrMovableArg {
-    explicit NonCopyableOrMovableArg(int value) : value_{value} {};
-    ~NonCopyableOrMovableArg() = default;
-    NonCopyableOrMovableArg(const NonCopyableOrMovableArg&) = delete;
-    NonCopyableOrMovableArg(NonCopyableOrMovableArg&&) = delete;
-    NonCopyableOrMovableArg& operator=(const NonCopyableOrMovableArg&) = delete;
-    NonCopyableOrMovableArg& operator=(NonCopyableOrMovableArg&&) = delete;
-
-    int value_;  // NOLINT misc-non-private-member-variables-in-classes: intended
-  };
-
-  auto lambda = [](std::tuple<NonCopyableOrMovableArg&&> value) -> NonCopyableOrMovableArg&& {
-    return std::get<0>(std::move(value));
-  };
-  auto packing_lambda = makeTuplePacking(lambda);
+  auto forwardFn = [](int&& value) -> int&& { return std::move(value); };
+  auto packing_lambda = makeTuplePacking(forwardFn);
 
   // when
-  NonCopyableOrMovableArg argument{1};  // NOLINT: misc-const-correctness: is about to be moved
-  decltype(auto) result = packing_lambda(std::move(argument));
+  int argument{0};  // NOLINT: misc-const-correctness: is about to be moved
+  decltype(auto) result =
+      packing_lambda(std::move(argument));  // NOLINT hicpp-move-const-arg,performance-move-const-arg
 
   // then
-  static_assert(std::is_same_v<decltype(result), NonCopyableOrMovableArg&&>);
-  EXPECT_EQ(result.value_, 1);
+  static_assert(std::is_same_v<decltype(result), int&&>);
+  EXPECT_EQ(result, 0);
+  result++;
+  EXPECT_EQ(argument,  // NOLINT bugprone-use-after-move,hicpp-invalid-access-moved: actually no move has happend here
+            1);
 }
 
-// Ensure that returning by value works
+// Ensure that returning by value is also supported
 TEST(MakeTuplePacking, callableReturningByValue_called_returnedByValue) {
   // given
-  auto lambda = [](std::tuple<const int> arg) -> int { return std::get<0>(arg); };
+  auto lambda = [](int arg) -> int { return arg; };
   auto packing_lambda = makeTuplePacking(lambda);
 
   // when
-  int argument{1};
-  decltype(auto) result = packing_lambda(std::as_const(argument));
+  const int argument{1};
+  decltype(auto) result = packing_lambda(argument);
 
   // then
   static_assert(std::is_same_v<decltype(result), int>);
@@ -172,3 +166,4 @@ TEST(MakeTuplePacking, callableAccecptingTupleOfIntAndString_calledWithIntAndStr
   // then
   EXPECT_EQ(result, "12");
 }
+
