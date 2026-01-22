@@ -40,15 +40,6 @@ TEST(BindFront, TwoArgumentLambdaWithoutArgumentsBound_calledWithTwoArguments_wo
   ASSERT_EQ(result, "56");
 }
 
-TEST(BindFront, TwoArgumentLambdaWithFirstRValueArgumentBound_calledWithOneRValueArgument_works) {
-  auto lambda = [](std::unique_ptr<int> arg1, std::unique_ptr<int> arg2) { return *arg1 + *arg2; };
-  auto boundLambda = bindFront(lambda, std::make_unique<int>(10));
-
-  const auto result = boundLambda(std::make_unique<int>(10));
-
-  ASSERT_EQ(result, 20);
-}
-
 struct Foo {
   int multiply(int x) const { return x * factor; }
   int factor;
@@ -72,3 +63,26 @@ TEST(BindFront, OneArgumentMemberFunctionWithArgumentBound_calledWithoutArgument
   ASSERT_EQ(result, 9);
 }
 
+TEST(BindFront, LambdaWithBoundArgument_calledTwice_works) {
+  auto lambda = [](std::string arg) { return arg; };
+  const std::string arg{"arg"};
+  auto boundLambda = bindFront(lambda, arg);
+
+  const auto result1 = boundLambda();
+  const auto result2 = boundLambda();
+
+  ASSERT_EQ("arg", result1);
+  ASSERT_EQ("arg", result2);
+}
+
+TEST(BindFront, NonConstLambda_called_works) {
+  auto accumulateFn = [sum = 0](auto increment) mutable { return sum += increment; };
+
+  auto accumulateBy2Fn = bindFront(accumulateFn, 2);
+
+  const auto result1 = accumulateBy2Fn();
+  ASSERT_EQ(2, result1);
+
+  const auto result2 = accumulateBy2Fn();
+  ASSERT_EQ(4, result2);
+}

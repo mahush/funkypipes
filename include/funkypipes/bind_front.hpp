@@ -19,14 +19,10 @@ namespace funkypipes {
 template <typename TFn, typename... TArgsToBeBound>
 auto bindFront(TFn&& fn, TArgsToBeBound&&... argsToBeBound) {
   return [fn_ = std::forward<TFn>(fn), boundArgs_ = std::make_tuple(std::forward<TArgsToBeBound>(argsToBeBound)...)](
-             auto&&... args) mutable -> decltype(auto)  // Note: lambda needs to be mutable to make boundArgs_ moveable
-  {
+             auto&&... args) mutable -> decltype(auto) {
     return std::apply(
-        [&](auto&&... boundArgs) {
-          return std::invoke(fn_, std::forward<decltype(boundArgs)>(boundArgs)...,
-                             std::forward<decltype(args)>(args)...);
-        },
-        std::move(boundArgs_));
+        [&](const auto&... boundArgs) { return std::invoke(fn_, boundArgs..., std::forward<decltype(args)>(args)...); },
+        boundArgs_);
   };
 }
 }  // namespace funkypipes
